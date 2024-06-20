@@ -34,6 +34,15 @@ public class Client {
 
                     String response = in.readLine();
                     System.out.println(response);
+
+                    if (response.startsWith("Login successful")) {
+                        String role = response.split(": ")[1];
+                        if ("admin".equalsIgnoreCase(role)) {
+                            showAdminMenu(scanner, in, out);
+                        } else {
+                            showUserMenu(scanner, in, out);
+                        }
+                    }
                 } else if (choice == 2) {
                     out.println("logout");
                     String response = in.readLine();
@@ -55,6 +64,83 @@ public class Client {
             System.err.println("Connection refused. Make sure the server is running.");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void showAdminMenu(Scanner scanner, BufferedReader in, PrintWriter out) throws IOException {
+        while (true) {
+            System.out.println("Admin Menu:");
+            System.out.println("1. Create Menu Item");
+            System.out.println("2. View Menu Items");
+            System.out.println("3. Update Menu Item");
+            System.out.println("4. Delete Menu Item");
+            System.out.println("5. Logout");
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+                    createMenuItem(scanner, in, out);
+                    break;
+                case 2:
+                    // Implementation for viewing menu items
+                    break;
+                case 3:
+                    // Implementation for updating menu item
+                    break;
+                case 4:
+                    // Implementation for deleting menu item
+                    break;
+                case 5:
+                    out.println("logout");
+                    String response = in.readLine();
+                    System.out.println(response);
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+
+    private static void createMenuItem(Scanner scanner, BufferedReader in, PrintWriter out) throws IOException {
+        System.out.print("Enter menu item name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter menu item price: ");
+        double price = scanner.nextDouble();
+        scanner.nextLine(); // consume the newline
+
+        out.println("createMenuItem:" + name + ":" + price);
+        String response = in.readLine();
+    }
+
+
+    private static void showUserMenu(Scanner scanner, BufferedReader in, PrintWriter out) throws IOException {
+        while (true) {
+            System.out.println("User Menu:");
+            System.out.println("1. View Menu");
+            System.out.println("2. Order Food");
+            System.out.println("3. Logout");
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+                    // Implementation for viewing menu
+                    break;
+                case 2:
+                    // Implementation for ordering food
+                    break;
+                case 3:
+                    out.println("logout");
+                    String response = in.readLine();
+                    System.out.println(response);
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
         }
     }
 }

@@ -8,4 +8,6 @@ public interface Database {
     boolean checkCredentials(int userId, String password);
     void LogLoginAttempt(int userId, boolean success);
     void LogLogoutAttempt(int userId, boolean success);
+    String getUserRole(int userId);
+    boolean createMenuItem(String name, double price);
 }

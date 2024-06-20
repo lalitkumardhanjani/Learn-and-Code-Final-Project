@@ -45,6 +45,7 @@ public class Server {
         }
 
         private void handleClient(Socket clientSocket) {
+            Database database = new SqlServerDatabase();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                  PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
@@ -54,7 +55,6 @@ public class Server {
                         if (activeUsers.get(clientSocket) == null) {
                             out.println("not logged in");
                         } else {
-                            Database database = new SqlServerDatabase();
                             database.LogLogoutAttempt(userId, true);
                             out.println("Logged out.");
                             activeUsers.remove(clientSocket);
@@ -68,11 +68,27 @@ public class Server {
 
                             Authentication auth = new UserAuthByCredentials(userId, password, new SqlServerDatabase());
                             if (auth.login()) {
-                                out.println("Login successful");
+                                String role = database.getUserRole(userId);
+                                out.println("Login successful. Role: " + role);
                                 this.userId = userId;
                                 activeUsers.put(clientSocket, userId);
                             } else {
                                 out.println("Invalid credentials");
+                            }
+                        } else if (parts.length == 3 && "createMenuItem".equals(parts[0])) {
+                            if (activeUsers.get(clientSocket) == null || !database.getUserRole(activeUsers.get(clientSocket)).equalsIgnoreCase("admin")) {
+                                out.println("Permission denied.");
+                            } else {
+                                String name = parts[1];
+                                double price = Double.parseDouble(parts[2]);
+
+                                boolean success = database.createMenuItem(name, price);
+                                if (success) {
+                                    System.out.println("Menu item created successfully.");
+                                    out.println("Menu item created successfully.");
+                                } else {
+                                    out.println("Failed to create menu item.");
+                                }
                             }
                         } else {
                             out.println("Invalid input.");

@@ -56,4 +56,35 @@ public class SqlServerDatabase implements Database {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public String getUserRole(int userId) {
+        String query = "SELECT Role FROM UsersRole WHERE UserId = ?";
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, userId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("Role");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean createMenuItem(String name, double price) {
+        String query = "INSERT INTO Menu (Name, Price, IsAvailable) VALUES (?, ?, 1)";
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, name);
+            statement.setDouble(2, price);
+            int rowsAffected = statement.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
