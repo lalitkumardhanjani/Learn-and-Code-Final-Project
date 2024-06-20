@@ -6,6 +6,6 @@ import java.sql.SQLException;
 public interface Database {
     Connection getConnection() throws SQLException;
     boolean checkCredentials(int userId, String password);
-    void saveLoginAttempt(int userId, boolean success);
-    void saveLogoutAttempt(int userId, boolean success);
+    void LogLoginAttempt(int userId, boolean success);
+    void LogLogoutAttempt(int userId, boolean success);
 }

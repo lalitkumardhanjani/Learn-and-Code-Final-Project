@@ -32,7 +32,7 @@ public class SqlServerDatabase implements Database {
     }
 
     @Override
-    public void saveLoginAttempt(int userId, boolean success) {
+    public void LogLoginAttempt(int userId, boolean success) {
         String query = "INSERT INTO LoginAttempts (UserId, AttemptTime, Success) VALUES (?, GETDATE(), ?)";
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -45,7 +45,7 @@ public class SqlServerDatabase implements Database {
     }
 
     @Override
-    public void saveLogoutAttempt(int userId, boolean success) {
+    public void LogLogoutAttempt(int userId, boolean success) {
         String query = "INSERT INTO LogoutAttempts (UserId, AttemptTime, Success) VALUES (?, GETDATE(), ?)";
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {

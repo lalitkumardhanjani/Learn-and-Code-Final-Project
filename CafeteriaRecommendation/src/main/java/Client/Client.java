@@ -16,6 +16,7 @@ public class Client {
             Scanner scanner = new Scanner(System.in);
 
             while (true) {
+                System.out.println("Welcome to Cafeteria Management System");
                 System.out.println("1. Login");
                 System.out.println("2. Logout");
                 System.out.print("Enter your choice: ");
@@ -33,18 +34,19 @@ public class Client {
 
                     String response = in.readLine();
                     System.out.println(response);
-                    if ("Login successful".equals(response)) {
-                        // Continue processing after successful login
-                    }
                 } else if (choice == 2) {
                     out.println("logout");
-                    System.out.println("Logged out.");
-                    break;
+                    String response = in.readLine();
+                    if ("not logged in".equals(response)) {
+                        System.out.println("You are not logged in. Please log in first.");
+                    } else {
+                        System.out.println(response);
+                        break;
+                    }
                 } else {
                     System.out.println("Invalid choice. Please try again.");
                 }
             }
-
             in.close();
             out.close();
             socket.close();

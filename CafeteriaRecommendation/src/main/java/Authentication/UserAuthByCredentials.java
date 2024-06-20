@@ -1,7 +1,6 @@
 package Authentication;
 
 import Database.Database;
-
 public class UserAuthByCredentials implements Authentication {
     private int userId;
     private String password;
