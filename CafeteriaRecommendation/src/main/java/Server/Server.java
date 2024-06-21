@@ -29,7 +29,7 @@ public class Server {
 
     private static class ClientHandler implements Runnable {
         private Socket clientSocket;
-        private int userId = -1; // Default value for unauthenticated users
+        private int userId = -1;
 
         public ClientHandler(Socket clientSocket) {
             this.clientSocket = clientSocket;
@@ -75,16 +75,19 @@ public class Server {
                             } else {
                                 out.println("Invalid credentials");
                             }
-                        } else if (parts.length == 3 && "createMenuItem".equals(parts[0])) {
+                        } else if(parts.length == 3 && "updatedStatus".equals(parts[0])){
+
+                        }
+                        else if (parts.length == 4 && "createMenuItem".equals(parts[0])) {
                             if (activeUsers.get(clientSocket) == null || !database.getUserRole(activeUsers.get(clientSocket)).equalsIgnoreCase("admin")) {
                                 out.println("Permission denied.");
                             } else {
                                 String name = parts[1];
                                 double price = Double.parseDouble(parts[2]);
+                                Integer MealType = Integer.parseInt((parts[3]));
 
-                                boolean success = database.createMenuItem(name, price);
+                                boolean success = database.createMenuItem(name, price,MealType);
                                 if (success) {
-                                    System.out.println("Menu item created successfully.");
                                     out.println("Menu item created successfully.");
                                 } else {
                                     out.println("Failed to create menu item.");

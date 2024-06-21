@@ -18,7 +18,7 @@ public class SqlServerDatabase implements Database {
 
     @Override
     public boolean checkCredentials(int userId, String password) {
-        String query = "SELECT * FROM UserCredentials WHERE UserId = ? AND Password = ?";
+        String query = "SELECT * FROM UserCredential WHERE UserId = ? AND Password = ?";
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, userId);
@@ -59,7 +59,7 @@ public class SqlServerDatabase implements Database {
 
     @Override
     public String getUserRole(int userId) {
-        String query = "SELECT Role FROM UsersRole WHERE UserId = ?";
+        String query = "SELECT Role FROM UserRole JOIN [User] ON UserRole.Id =[User].RoleId WHERE [User].Id = ?";
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, userId);
@@ -74,12 +74,27 @@ public class SqlServerDatabase implements Database {
     }
 
     @Override
-    public boolean createMenuItem(String name, double price) {
-        String query = "INSERT INTO Menu (Name, Price, IsAvailable) VALUES (?, ?, 1)";
+    public  boolean isMenuItemExists(String name){
+        String menuItemExist = "IF EXISTS (SELECT Name FROM Menu WHERE Name = 'Pohe') SELECT 1 ELSE SELECT 0";
+
+        try(Connection connection = getConnection();
+            PreparedStatement statement = connection.prepareStatement(menuItemExist);
+            statement.setString(1,name);
+            int
+        ) catch(SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean createMenuItem(String name, double price,Integer MealType) {
+        String query = "INSERT INTO Menu (Name, Price, IsAvailable,MealId) VALUES (?, ?, 1,?)";
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, name);
             statement.setDouble(2, price);
+            statement.setInt(3,MealType);
             int rowsAffected = statement.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {

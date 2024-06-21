@@ -84,7 +84,7 @@ public class Client {
                     createMenuItem(scanner, in, out);
                     break;
                 case 2:
-                    // Implementation for viewing menu items
+                    UpdateMenuItem(scanner,in,out);
                     break;
                 case 3:
                     // Implementation for updating menu item
@@ -109,13 +109,23 @@ public class Client {
         String name = scanner.nextLine();
         System.out.print("Enter menu item price: ");
         double price = scanner.nextDouble();
-        scanner.nextLine(); // consume the newline
+        System.out.println("Enter menu item Type: ");
+        Integer mealType = scanner.nextInt();
 
-        out.println("createMenuItem:" + name + ":" + price);
+        out.println("createMenuItem:" + name + ":" + price + ":" + mealType);
         String response = in.readLine();
+        System.out.println(response);
     }
 
-
+    private  static void updateMenuItem(Scanner scanner,BufferedReader in,PrintWriter out) throws  IOException{
+        System.out.println("Enter Menu Item Name: ");
+        String menuItemName= scanner.nextLine();
+        System.out.println("Enter the Updated Status of the food");
+        String updatedStatus = scanner.nextLine();
+        out.println("updatedStatus:" + menuItemName + ":" + updatedStatus);
+        String response = in.readLine();
+        System.out.println(response);
+    }
     private static void showUserMenu(Scanner scanner, BufferedReader in, PrintWriter out) throws IOException {
         while (true) {
             System.out.println("User Menu:");
