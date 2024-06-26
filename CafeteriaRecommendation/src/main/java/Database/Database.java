@@ -1,7 +1,5 @@
 package Database;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -22,4 +20,12 @@ public interface Database {
 
     public boolean deleteMenuItem(int menuId);
 
+    List<String> getRecommendedMenu();
+
+    List<String> getMenuItems(Connection conn, String mealType) throws SQLException;
+
+    int rolloutRecommendation();
+
+    List<String> getFinalizedMenu(int breakfastMenuItemId,int lunchMenuItemId,int dinnerMenuItemId) throws SQLException;
+    int rolloutFinalizedMenusStatusUpdate();
 }

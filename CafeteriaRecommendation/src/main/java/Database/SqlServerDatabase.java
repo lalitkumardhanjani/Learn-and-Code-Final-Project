@@ -32,10 +32,41 @@ public class SqlServerDatabase implements Database {
             ResultSet resultSet = statement.executeQuery();
             return resultSet.next();
         } catch (SQLException e) {
-            // Log or throw custom exception
             e.printStackTrace();
             return false;
         }
+    }
+    @Override
+    public  int rolloutFinalizedMenusStatusUpdate(){
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement("UPDATE RecommendedMenu SET Status = 1 WHERE Status = 0")) {
+            stmt.executeUpdate();
+            return 1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    @Override
+    public List<String> getFinalizedMenu(int breakfastMenuItemId, int lunchMenuItemId, int dinnerMenuItemId) throws SQLException {
+        Connection conn = getConnection();
+        List<String> finalizedMenuItems = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT Menu.Id, Menu.Name as Name, Menu.Price as Price, MealType.MealType as MealType FROM Menu JOIN MealType ON Menu.MealId=MealType.Id WHERE Menu.Id IN (?, ?, ?)")) {
+            stmt.setInt(1, breakfastMenuItemId);
+            stmt.setInt(2, lunchMenuItemId);
+            stmt.setInt(3, dinnerMenuItemId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("Id");
+                    String name = rs.getString("Name");
+                    double price = rs.getDouble("Price");
+                    String mealType = rs.getString("MealType");
+                    String formattedItem = String.format("%-15d %-20s ₹%-9.2f %-20s ", id, name, price, mealType);
+                    finalizedMenuItems.add(formattedItem);
+                }
+            }
+        }
+        return finalizedMenuItems;
     }
 
 
@@ -52,6 +83,59 @@ public class SqlServerDatabase implements Database {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public int rolloutRecommendation(){
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement("UPDATE RecommendedMenu SET Status = 0 WHERE Status = -1")) {
+             stmt.executeUpdate();
+             return 1;
+        } catch (SQLException e) {
+             e.printStackTrace();
+             return 0;
+        }
+    }
+
+    @Override
+    public List<String> getRecommendedMenu(){
+        List<String> recommendedMenuItems = new ArrayList<>();
+        try (Connection conn = getConnection()) {
+            recommendedMenuItems.addAll(getMenuItems(conn, "Breakfast"));
+            recommendedMenuItems.addAll(getMenuItems(conn, "Lunch"));
+            recommendedMenuItems.addAll(getMenuItems(conn, "Dinner"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return recommendedMenuItems;
+    }
+
+    @Override
+    public List<String> getMenuItems(Connection conn, String mealType) throws SQLException {
+        List<String> menuItems = new ArrayList<>();
+        try (Statement stmt = conn.createStatement()) {
+            try (ResultSet rs = stmt.executeQuery("SELECT DISTINCT TOP 3 Menu.Id as Id,Menu.Name as Name,Menu.Price as Price,MealType.MealType as MealType FROM FoodFeedbackHistory JOIN [User] " +
+                    "ON FoodFeedbackHistory.UserId=[User].Id JOIN Menu ON Menu.Id = FoodFeedbackHistory.FoodItemId JOIN MealType ON " +
+                    "Menu.MealId=MealType.Id WHERE Menu.IsAvailable = 1 AND MealType.MealType='" + mealType + "'")) {
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    String name = rs.getString("name");
+                    double price = rs.getDouble("price");
+                    String formattedItem = String.format("%-15d %-20s ₹%-9.2f %-20s ", id, name, price, mealType);
+                    menuItems.add(formattedItem);
+
+                    // Insert into RecommendedMenu table
+                    try (PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO RecommendedMenu (Name, price, mealtype,status) VALUES (?, ?, ?,-1)")) {
+                        insertStmt.setString(1, name);
+                        insertStmt.setDouble(2, price);
+                        insertStmt.setString(3, mealType);
+                        insertStmt.executeUpdate();
+                    }
+                }
+            }
+        }
+        return menuItems;
+    }
+
 
     @Override
     public void logLogoutAttempt(int userId, boolean success) {

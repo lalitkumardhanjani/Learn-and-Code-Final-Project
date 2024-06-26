@@ -23,7 +23,7 @@ public class Client {
 
             System.out.println("Enter userId: ");
             int userId = readIntInput(scanner);
-            scanner.nextLine(); // consume newline
+            scanner.nextLine();
             System.out.println("Enter password: ");
             String password = scanner.nextLine();
 
@@ -33,7 +33,6 @@ public class Client {
             System.out.println(response);
 
             if (response.startsWith("Login successful")) {
-                // Split the response correctly to get the role
                 String[] responseParts = response.split(":");
                 if (responseParts.length > 1) {
                     String role = responseParts[1].trim();
@@ -41,6 +40,8 @@ public class Client {
                         showAdminMenu(scanner, in, out);
                     } else if("chef".equalsIgnoreCase(role)){
                         showChefMenu(scanner, in, out);
+                    } else if("employee".equalsIgnoreCase(role)){
+                        showEmployeeMenu(scanner,in,out);
                     }
                 } else {
                     System.out.println("Role information missing in response.");
@@ -120,7 +121,7 @@ public class Client {
         double price = scanner.nextDouble();
         System.out.println("Enter menu item Type (1-Breakfast, 2-Lunch, 3-Dinner): ");
         int mealType = scanner.nextInt();
-        scanner.nextLine(); // consume newline
+        scanner.nextLine();
         System.out.println("Enter item availability (1-Available, 0-Not Available): ");
         int availability = scanner.nextInt();
 
@@ -171,6 +172,15 @@ public class Client {
                     generateRecommendationMenu(in, out);
                     break;
                 case 3:
+                    rolloutRecommendationMenu(in,out);
+                    break;
+                case 4:
+                    generateFinalizedMenu(scanner,in,out);
+                    break;
+                case 5:
+                    rolloutFinalizedMenu(in,out);
+                    break;
+                case 6:
                     logout(out);
                     return;
                 default:
@@ -179,6 +189,31 @@ public class Client {
         }
     }
 
+    private static void generateFinalizedMenu(Scanner scanner,BufferedReader in,PrintWriter out) throws IOException{
+
+        System.out.println("Enter the Menu Item Id for the Finalized Breakfast");
+        int breakfastMenuItemId=scanner.nextInt();
+        System.out.println("Enter the Menu Item Id for the Finalized Lunch");
+        int lunchMenuItemId = scanner.nextInt();
+        System.out.println("Enter the Menu Item Id for the Finalized Dinner");
+        int dinnerMenuItemId = scanner.nextInt();
+        out.println("generateFinalizedMenu:"+breakfastMenuItemId+":"+lunchMenuItemId+":"+dinnerMenuItemId);
+        String response;
+        while (!(response = in.readLine()).equals("END")) {
+            System.out.println(response);
+        }
+    }
+
+    private static void  rolloutFinalizedMenu(BufferedReader in,PrintWriter out) throws  IOException{
+        out.println("rolloutFinalizedMenu");
+        String response = in.readLine();
+        System.out.println(response);
+    }
+    private static void  rolloutRecommendationMenu(BufferedReader in,PrintWriter out) throws  IOException{
+        out.println("rolloutRecommendationMenu");
+        String response = in.readLine();
+        System.out.println(response);
+    }
     private static void generateRecommendationMenu(BufferedReader in, PrintWriter out) throws IOException {
         out.println("generateRecommendationMenu");
         String response;
@@ -186,8 +221,6 @@ public class Client {
             System.out.println(response);
         }
     }
-
-
     private static void displayChefMenu() {
         System.out.println("Chef Menu:");
         System.out.println("1. View Menu");

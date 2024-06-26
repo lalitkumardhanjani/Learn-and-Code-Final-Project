@@ -7,6 +7,7 @@ import Database.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import java.io.*;
 import java.net.*;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +65,8 @@ public class Server {
                 System.err.println("Client disconnected unexpectedly: " + e.getMessage());
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             } finally {
                 try {
                     clientSocket.close();
@@ -85,7 +88,7 @@ public class Server {
             }
         }
 
-        private void handleLoginAndMenuCreation(BufferedReader in, PrintWriter out, String inputLine) throws IOException {
+        private void handleLoginAndMenuCreation(BufferedReader in, PrintWriter out, String inputLine) throws IOException, SQLException {
             String[] parts = inputLine.split(":");
             if (parts.length == 3) {
                 handleLogin(out, parts);
@@ -96,9 +99,57 @@ public class Server {
             } else if (parts.length == 5 && "updateMenuItem".equals(parts[0])) {
                 handleUpdateMenuItem(out, parts);
             } else if (parts.length ==2 && "deleteMenuItem".equals(parts[0])) {
-                handleDeleteMenuItem(out,parts);
-            } else {
+                handleDeleteMenuItem(out, parts);
+            } else if (parts.length == 1 && "generateRecommendationMenu".equals(parts[0])){
+                generateRecommendation(out);
+            } else if (parts.length==1 && "rolloutRecommendationMenu".equals(parts[0])) {
+                rolloutRecommendationMenu(out);
+            } else if (parts.length==4 && "generateFinalizedMenu".equals(parts[0])){
+                generateFinalizedMenu(in,out,parts);
+            } else if (parts.length ==1 && "rolloutFinalizedMenu".equals(parts[0])){
+                rolloutFinalizedMenu(out);
+            }
+            else {
                 out.println("Invalid input.");
+            }
+        }
+
+        private  void generateFinalizedMenu(BufferedReader in,PrintWriter out,String [] parts) throws SQLException {
+            int breakfastMenuItemId =Integer.parseInt(parts[1]);
+            int lunchMenuItemId = Integer.parseInt(parts[2]);
+            int dinnerMenuItemId = Integer.parseInt(parts[3]);
+
+            List<String> finalizedMenu = database.getFinalizedMenu(breakfastMenuItemId,lunchMenuItemId,dinnerMenuItemId);
+            if (finalizedMenu.isEmpty()) {
+                out.println("No menu items available.");
+            } else {
+                out.println("----- Finalized Cafeteria Menu -----");
+                out.println(String.format("%-15s %-20s %-10s %-15s", "Id", "Item", "Price", "MealType"));
+                out.println("--------------------------------------------");
+
+                for (String menuItem : finalizedMenu) {
+                    out.println(menuItem);
+                }
+                out.println("--------------------------------------------");
+                out.println("END");
+            }
+
+        }
+
+        private void rolloutFinalizedMenu(PrintWriter out){
+            int isRollout=database.rolloutFinalizedMenusStatusUpdate();
+            if(isRollout==1){
+                out.println("Roll out successfully");
+            }else{
+                out.println("Roll out have some issue");
+            }
+        }
+        private void rolloutRecommendationMenu(PrintWriter out){
+            int isRollout=database.rolloutRecommendation();
+            if(isRollout==1){
+                out.println("Roll out successfully");
+            }else{
+                out.println("Roll out have some issue");
             }
         }
 
@@ -163,11 +214,26 @@ public class Server {
             }
         }
 
+        private  void generateRecommendation(PrintWriter out){
+            if(activeUsers.get(clientSocket)!=null){
+                List<String> recommendedMenuItems =database.getRecommendedMenu();
+                if (recommendedMenuItems.isEmpty()) {
+                    out.println("No menu items available.");
+                } else {
+                    out.println("----- Recommended Cafeteria Menu -----");
+                    out.println(String.format("%-15s %-20s %-10s %-15s","Id", "Item", "Price", "MealType"));
+                    out.println("--------------------------------------------");
 
-        private void handleUpdateMenuItem(BufferedReader in, PrintWriter out) throws IOException {
-
+                    for (String menuItem : recommendedMenuItems) {
+                        out.println(menuItem);
+                    }
+                    out.println("--------------------------------------------");
+                    out.println("END");
+                }
+            } else {
+                out.println("Not authorized.");
+            }
         }
-
 
         private void handleViewMenu(PrintWriter out) {
             if (activeUsers.get(clientSocket) != null) {
