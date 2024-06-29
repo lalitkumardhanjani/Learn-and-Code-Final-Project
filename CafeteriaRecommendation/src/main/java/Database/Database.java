@@ -12,36 +12,21 @@ public interface Database {
     void logLoginAttempt(int userId, boolean success);
     void logLogoutAttempt(int userId, boolean success);
     String getUserRole(int userId);
-    //boolean createMenuItem(String name, double price, Integer MealType,int availability);
-
     void createMenuItem(String name, double price, Integer mealType, int availability);
     List<String> getMenuItems();
-    public void updateMenuItem(int menuId, String newName, double newPrice, int newAvailability);
-
+    void updateMenuItem(int menuId, String newName, double newPrice, int newAvailability);
     boolean isValidMenuId(int menuId);
-
-    public boolean deleteMenuItem(int menuId);
-
+    boolean deleteMenuItem(int menuId);
     List<String> generateRecommendedMenu();
-
     List<String> getRecommendedMenu() throws SQLException;
-
     List<String> getMenuItems(Connection conn, String mealType) throws SQLException;
-
     int rolloutRecommendation();
-
-    List<String> getFinalizedMenu(int breakfastMenuItemId,int lunchMenuItemId,int dinnerMenuItemId) throws SQLException;
+    List<String> getFinalizedMenu(int breakfastMenuItemId, int lunchMenuItemId, int dinnerMenuItemId) throws SQLException;
     int rolloutFinalizedMenusStatusUpdate();
-
     int insertSelectedFoodItemsInDB(BufferedReader in, PrintWriter out, List<Integer> ids);
-
     List<String> getSelectedFoodItemsEmployees() throws SQLException;
-
-    int giveFoodFeedback(int FoodItemId,int Rating,String comment,int userId);
-
-    List<String> getFoodFeedbackHistory() throws  SQLException;
-
+    int giveFoodFeedback(int FoodItemId, int Rating, String comment, int userId);
+    List<String> getFoodFeedbackHistory() throws SQLException;
     List<String> getFinalizedMenu() throws SQLException;
     List<String> getNotifications();
-
 }

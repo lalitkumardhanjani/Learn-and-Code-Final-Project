@@ -26,8 +26,11 @@ public class Client {
             scanner.nextLine();
             System.out.println("Enter password: ");
             String password = scanner.nextLine();
-
-            out.println(roleChoice + ":" + userId + ":" + password);
+            System.out.println("Sending login request...");
+            System.out.println("Role Choice: " + roleChoice);
+            System.out.println("User ID: " + userId);
+            System.out.println("Password: " + password);
+            out.println("login:"+roleChoice + ":" + userId + ":" + password);
 
             String response = in.readLine();
             System.out.println(response);

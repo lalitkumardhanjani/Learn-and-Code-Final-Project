@@ -1,12 +1,12 @@
 package Authentication;
 
-import Database.Database; // Import the Database class
+import Database.Database;
 
 public class UserAuthByCredentials implements AuthenticationService {
-    private final int userId;
-    private final String password;
-    private final int role;
-    private final Database database;
+    private int userId;
+    private String password;
+    private int role;
+    private Database database;
 
     public UserAuthByCredentials(int userId, String password, int role, Database database) {
         this.userId = userId;
@@ -17,7 +17,6 @@ public class UserAuthByCredentials implements AuthenticationService {
 
     @Override
     public boolean login() {
-        return database.checkCredentials(userId, password, role); // Pass an empty string for role
+        return database.checkCredentials(userId, password, role);
     }
-
 }
