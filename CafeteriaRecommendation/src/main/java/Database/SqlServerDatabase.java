@@ -1,5 +1,7 @@
 package Database;
 
+import java.io.BufferedReader;
+import java.io.PrintWriter;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +39,49 @@ public class SqlServerDatabase implements Database {
         }
     }
     @Override
+    public int insertSelectedFoodItemsInDB(BufferedReader in, PrintWriter out, List<Integer> ids) {
+        int breakfastMenuItemId = ids.get(0);
+        int lunchMenuItemId = ids.get(1);
+        int dinnerMenuItemId = ids.get(2);
+        int userId = ids.get(3);
+
+        String query = "INSERT INTO EmployeeFoodVotes (FoodItemId, UserId, DateTime) VALUES (?, ?, GETDATE())";
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            // Insert breakfast item
+            statement.setInt(1, breakfastMenuItemId);
+            statement.setInt(2, userId);
+            statement.addBatch();
+
+            // Insert lunch item
+            statement.setInt(1, lunchMenuItemId);
+            statement.setInt(2, userId);
+            statement.addBatch();
+
+            // Insert dinner item
+            statement.setInt(1, dinnerMenuItemId);
+            statement.setInt(2, userId);
+            statement.addBatch();
+
+            int[] results = statement.executeBatch();
+
+            // Check if all rows were inserted successfully
+            for (int result : results) {
+                if (result != PreparedStatement.SUCCESS_NO_INFO && result != 1) {
+                    return 0; // Indicate failure if any row wasn't inserted successfully
+                }
+            }
+            return 1; // Indicate success if all rows were inserted successfully
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0; // Indicate failure
+        }
+    }
+
+    @Override
     public  int rolloutFinalizedMenusStatusUpdate(){
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement("UPDATE RecommendedMenu SET Status = 1 WHERE Status = 0")) {
@@ -48,13 +93,90 @@ public class SqlServerDatabase implements Database {
         }
     }
     @Override
-    public List<String> getFinalizedMenu(int breakfastMenuItemId, int lunchMenuItemId, int dinnerMenuItemId) throws SQLException {
+    public int giveFoodFeedback(int FoodItemId,int Rating,String comment,int userId){
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO FoodFeedbackHistory (userId, FoodItemId, Rating, Comments,DateTime) VALUES (?, ?, ?, ?,GETDATE())")) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, FoodItemId);
+            stmt.setInt(3, Rating);
+            stmt.setString(4, comment);
+            int rowAffected=stmt.executeUpdate();
+            if(rowAffected > 0 ){
+                return  1;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    @Override
+    public  List<String> getFoodFeedbackHistory() throws  SQLException{
+        Connection conn = getConnection();
+        List<String> selectedFoodItemsByEmployees = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT ffh.Id, ffh.UserId, u.Name AS UserName, ffh.FoodItemId, m.Name AS FoodItemName, mt.MealType, ffh.Rating, ffh.Comments, ffh.DateTime FROM FoodFeedbackHistory ffh JOIN [User] u ON ffh.UserId = u.Id JOIN Menu m ON ffh.FoodItemId = m.Id JOIN MealType mt ON m.MealId = mt.Id;\n")) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("Id");
+                    int UserId = rs.getInt("UserId");
+                    String UserName = rs.getString("UserName");
+                    int foodItemId = rs.getInt("FoodItemId");
+                    String foodItemName = rs.getString("FoodItemName");
+                    String MealType = rs.getString("MealType");
+                    int rating = rs.getInt("Rating");
+                    String comment = rs.getString("Comments");
+                    String date = rs.getString("DateTime");
+                    String formattedItem = String.format("%-15d %-15d %-20s %-20d %-20s %-20s %-20d %-20s %-20s ", id, UserId, UserName,foodItemId,foodItemName,MealType,rating,comment,date);
+                    selectedFoodItemsByEmployees.add(formattedItem);
+                }
+            }
+        }
+        return selectedFoodItemsByEmployees;
+    }
+    @Override
+    public  List<String> getSelectedFoodItemsEmployees() throws SQLException {
+        Connection conn = getConnection();
+        List<String> selectedFoodItemsByEmployees = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT efv.FoodItemId, m.Name, COUNT(efv.Id) AS VoteCount FROM EmployeeFoodVotes efv JOIN Menu m ON efv.FoodItemId = m.Id GROUP BY efv.FoodItemId, m.Name ORDER BY VoteCount DESC;")) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("FoodItemId");
+                    String name = rs.getString("Name");
+                    int voteCount = rs.getInt("VoteCount");
+                    String formattedItem = String.format("%-15d %-20s %-20d ", id, name, voteCount);
+                    selectedFoodItemsByEmployees.add(formattedItem);
+                }
+            }
+        }
+        return selectedFoodItemsByEmployees;
+    }
+    @Override
+    public List<String> getFinalizedMenu() throws SQLException {
         Connection conn = getConnection();
         List<String> finalizedMenuItems = new ArrayList<>();
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT Menu.Id, Menu.Name as Name, Menu.Price as Price, MealType.MealType as MealType FROM Menu JOIN MealType ON Menu.MealId=MealType.Id WHERE Menu.Id IN (?, ?, ?)")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT Id, FoodItemId, Name FROM FinalizedMenu WHERE CONVERT(DATE, DateTime) = CONVERT(DATE, GETDATE());")) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("Id");
+                    int foodItemId = rs.getInt("foodItemId");
+                    String name = rs.getString("Name");
+                    String formattedItem = String.format("%-15d %-15d %-20s", id,foodItemId, name);
+                    finalizedMenuItems.add(formattedItem);
+                }
+            }
+        }
+        return finalizedMenuItems;
+    }
+
+    @Override
+    public List<String> getFinalizedMenu(int breakfastMenuItemId, int lunchMenuItemId, int dinnerMenuItemId) throws SQLException {
+        List<String> finalizedMenuItems = new ArrayList<>();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT Menu.Id, Menu.Name as Name, Menu.Price as Price, MealType.MealType as MealType FROM Menu JOIN MealType ON Menu.MealId=MealType.Id WHERE Menu.Id IN (?, ?, ?)")) {
             stmt.setInt(1, breakfastMenuItemId);
             stmt.setInt(2, lunchMenuItemId);
             stmt.setInt(3, dinnerMenuItemId);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     int id = rs.getInt("Id");
@@ -63,11 +185,19 @@ public class SqlServerDatabase implements Database {
                     String mealType = rs.getString("MealType");
                     String formattedItem = String.format("%-15d %-20s ₹%-9.2f %-20s ", id, name, price, mealType);
                     finalizedMenuItems.add(formattedItem);
+
+                    // Insert into FinalizedMenu table
+                    try (PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO FinalizedMenu (FoodItemId, Name, DateTime) VALUES (?, ?, GETDATE())")) {
+                        insertStmt.setInt(1, id);
+                        insertStmt.setString(2, name); // Use setString for String values
+                        insertStmt.executeUpdate();
+                    }
                 }
             }
         }
         return finalizedMenuItems;
     }
+
 
 
     @Override
@@ -97,7 +227,7 @@ public class SqlServerDatabase implements Database {
     }
 
     @Override
-    public List<String> getRecommendedMenu(){
+    public List<String> generateRecommendedMenu(){
         List<String> recommendedMenuItems = new ArrayList<>();
         try (Connection conn = getConnection()) {
             recommendedMenuItems.addAll(getMenuItems(conn, "Breakfast"));
@@ -107,6 +237,24 @@ public class SqlServerDatabase implements Database {
             e.printStackTrace();
         }
         return recommendedMenuItems;
+    }
+
+    public List<String> getRecommendedMenu() throws SQLException {
+        List<String> menuItems = new ArrayList<>();
+        String query = "SELECT FoodItemId, Name, Price, MealType, Status FROM RecommendedMenu WHERE Status = 0";
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                int foodItemIdid = rs.getInt("FoodItemId");
+                String name = rs.getString("Name");
+                double price = rs.getDouble("Price");
+                String mealType = rs.getString("MealType");
+                String formattedItem = String.format("%-15d %-20s ₹%-9.2f %-20s", foodItemIdid, name, price, mealType);
+                menuItems.add(formattedItem);
+            }
+        }
+        return menuItems;
     }
 
     @Override
@@ -123,11 +271,15 @@ public class SqlServerDatabase implements Database {
                     String formattedItem = String.format("%-15d %-20s ₹%-9.2f %-20s ", id, name, price, mealType);
                     menuItems.add(formattedItem);
 
-                    // Insert into RecommendedMenu table
-                    try (PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO RecommendedMenu (Name, price, mealtype,status) VALUES (?, ?, ?,-1)")) {
-                        insertStmt.setString(1, name);
-                        insertStmt.setDouble(2, price);
-                        insertStmt.setString(3, mealType);
+                    try (PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO RecommendedMenu (FoodItemId,Name, price, mealtype,status) VALUES (?,?, ?, ?,-1)")) {
+                        insertStmt.setInt(1,id);
+                        insertStmt.setString(2, name);
+                        insertStmt.setDouble(3, price);
+                        insertStmt.setString(4, mealType);
+                        insertStmt.executeUpdate();
+                    }
+
+                    try (PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO Notification (Message,DateTime) VALUES ('Recommendation Menu is Ready',GETDATE())")) {
                         insertStmt.executeUpdate();
                     }
                 }
@@ -169,8 +321,8 @@ public class SqlServerDatabase implements Database {
 
     @Override
     public void createMenuItem(String name, double price, Integer mealType, int availability) {
-        try (Connection conn = DriverManager.getConnection(DB_URL);
-             PreparedStatement stmt = conn.prepareStatement("INSERT INTO Menu (name, price, mealType, availability) VALUES (?, ?, ?, ?)")) {
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO Menu (name, price, mealId, isavailable) VALUES (?, ?, ?, ?)")) {
             stmt.setString(1, name);
             stmt.setDouble(2, price);
             stmt.setInt(3, mealType);
@@ -179,8 +331,31 @@ public class SqlServerDatabase implements Database {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        try (Connection conn = getConnection();
+             PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO Notification (Message,DateTime) VALUES ('New Food Item is added into the Menu',GETDATE())")) {
+            insertStmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
+    @Override
+    public List<String> getNotifications(){
+        List<String> notifications = new ArrayList<>();
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT Message FROM Notification")) {
+            while (rs.next()) {
+                String message = rs.getString("Message");
+                String formattedItem = String.format("%-20s",message);
+                notifications.add(formattedItem);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return notifications;
+    }
     @Override
     public List<String> getMenuItems() {
         List<String> menuItems = new ArrayList<>();
@@ -244,7 +419,7 @@ public class SqlServerDatabase implements Database {
             params.add(newName);
             updateRequired = true;
         }
-        if (newPrice >= 0 && newName != null) {
+        if (newPrice >= 0) {
             queryBuilder.append("price = ?, ");
             params.add(newPrice);
             updateRequired = true;
@@ -272,6 +447,14 @@ public class SqlServerDatabase implements Database {
             }
             int rowsUpdated = stmt.executeUpdate();
             System.out.println("Rows updated: " + rowsUpdated);
+
+            // Insert the notification with the menuId included in the message
+            String notificationMessage = "Food item with Menu Id " + menuId + " is updated";
+            try (PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO Notification (Message,DateTime) VALUES (?,GETDATE())")) {
+                insertStmt.setString(1, notificationMessage);
+                insertStmt.executeUpdate();  // Use executeUpdate instead of executeQuery
+            }
+
         } catch (SQLException e) {
             System.err.println("SQL error while updating menu item: " + e.getMessage());
             e.printStackTrace();
@@ -280,6 +463,7 @@ public class SqlServerDatabase implements Database {
             e.printStackTrace();
         }
     }
+
 
 
 

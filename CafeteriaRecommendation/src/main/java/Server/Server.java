@@ -7,10 +7,13 @@ import Database.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import java.io.*;
 import java.net.*;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 public class Server {
     private static Map<Socket, Integer> activeUsers = new HashMap<>();
@@ -108,9 +111,137 @@ public class Server {
                 generateFinalizedMenu(in,out,parts);
             } else if (parts.length ==1 && "rolloutFinalizedMenu".equals(parts[0])){
                 rolloutFinalizedMenu(out);
+            } else if (parts.length ==1 && "viewRecommendationMenu".equals(parts[0])){
+                viewRecommendationMenu(out);
+            } else if (parts.length ==5 && "selectNextDayFoodItems".equals(parts[0])){
+                selectNextDayFoodItems(in,out,parts);
+            } else if (parts.length == 1 && "viewSelectedFoodItemsEmployees".equals((parts[0]))){
+                viewSelectedFoodItemsEmployees(out);
+            } else if (parts.length == 5 && "giveFeedbackToAnyFoodItem".equals((parts[0]))){
+                giveFeedbackToAnyFoodItem(in,out,parts);
+            } else if (parts.length ==1 && "viewFoodFeedbackHistory".equals(parts[0])) {
+                viewFoodFeedbackHistory(out);
+            } else if (parts.length ==1 && "viewFinalizedMenu".equals(parts[0])) {
+                viewFinalizedMenu(out);
+            } else if (parts.length == 1 && "viewNotifications".equals(parts[0])) {
+                viewNotifications(out);
             }
             else {
                 out.println("Invalid input.");
+            }
+        }
+
+        private void viewNotifications(PrintWriter out) {
+            List<String> notifications = database.getNotifications();
+            if (notifications.isEmpty()) {
+                out.println("No notifications are present");
+            } else {
+                out.println("-------------- Notifications -------------");
+                out.println("------------------------------------------");
+
+                for (String menuItem : notifications) {
+                    out.println(menuItem);
+                }
+                out.println("--------------------------------------------");
+                out.println("END");
+            }
+        }
+
+        private void viewFinalizedMenu(PrintWriter out) throws SQLException {
+            List<String> finalizedMenu = database.getFinalizedMenu();
+            if (finalizedMenu.isEmpty()) {
+                out.println("No menu items available.");
+            } else {
+                out.println("----- Finalized Menu-----");
+                out.println(String.format("%-15s %-20s %-10s ", "Id", "FoodId", "Name"));
+                out.println("--------------------------------------------");
+
+                for (String menuItem : finalizedMenu) {
+                    out.println(menuItem);
+                }
+                out.println("--------------------------------------------");
+                out.println("END");
+            }
+        }
+
+        private void viewFoodFeedbackHistory(PrintWriter out) throws SQLException {
+            List<String> foodFeedbackHistory = database.getFoodFeedbackHistory();
+            if (foodFeedbackHistory.isEmpty()) {
+                out.println("No menu items available.");
+            } else {
+                out.println("----- Feedback Food History By Employees-----");
+                out.println(String.format("%-15s %-20s %-10s %-15s %-20s %-10s %-15s %-20s %-10s", "Id", "UserId", "UserName","FoodItemId","FoodItemName","MealType","Rating","Comments","DateTime"));
+                out.println("--------------------------------------------");
+
+                for (String menuItem : foodFeedbackHistory) {
+                    out.println(menuItem);
+                }
+                out.println("--------------------------------------------");
+                out.println("END");
+            }
+        }
+
+        private void giveFeedbackToAnyFoodItem(BufferedReader in, PrintWriter out,String [] parts){
+            int foodItemId = Integer.parseInt(parts[1]);
+            int rating = Integer.parseInt((parts[2]));
+            String comment = parts[3];
+            int userId = Integer.parseInt((parts[4]));
+            int isFeedbackSubmitted = database.giveFoodFeedback(foodItemId,rating,comment,userId);
+            if(isFeedbackSubmitted == 1){
+                out.println("Feedback Submitted Successfully");
+            }else{
+                out.println("Feedback Submission have an issue");
+            }
+
+        }
+        private void viewSelectedFoodItemsEmployees(PrintWriter out) throws SQLException {
+            List<String> selectedFoodItemsByEmployees = database.getSelectedFoodItemsEmployees();
+            if (selectedFoodItemsByEmployees.isEmpty()) {
+                out.println("No menu items available.");
+            } else {
+                out.println("----- Selected Food Items By Employees-----");
+                out.println(String.format("%-15s %-20s %-10s", "FoodItemId", "Name", "VoteCount"));
+                out.println("--------------------------------------------");
+
+                for (String menuItem : selectedFoodItemsByEmployees) {
+                    out.println(menuItem);
+                }
+                out.println("--------------------------------------------");
+                out.println("END");
+            }
+        }
+
+        private void selectNextDayFoodItems(BufferedReader in,PrintWriter out,String [] parts){
+            int breakfastMenuItemId =Integer.parseInt(parts[1]);
+            int lunchMenuItemId = Integer.parseInt(parts[2]);
+            int dinnerMenuItemId = Integer.parseInt(parts[3]);
+            int userId = Integer.parseInt(parts[4]);
+            List<Integer> Ids = new ArrayList<>();
+            Ids.add(breakfastMenuItemId);
+            Ids.add(lunchMenuItemId);
+            Ids.add(dinnerMenuItemId);
+            Ids.add(userId);
+            int isSelected = database.insertSelectedFoodItemsInDB(in,out,Ids);
+            if(isSelected==1){
+                out.println("Selected food items successfully");
+            }else{
+                out.println("Selected food items have some issue");
+            }
+        }
+        private void viewRecommendationMenu(PrintWriter out) throws SQLException {
+            List<String> getrecommendationMenu = database.getRecommendedMenu();
+            if (getrecommendationMenu.isEmpty()) {
+                out.println("No menu items available.");
+            } else {
+                out.println("----- Recommended Cafeteria Menu -----");
+                out.println(String.format("%-15s %-20s %-10s %-15s", "Id", "Item", "Price", "MealType"));
+                out.println("--------------------------------------------");
+
+                for (String menuItem : getrecommendationMenu) {
+                    out.println(menuItem);
+                }
+                out.println("--------------------------------------------");
+                out.println("END");
             }
         }
 
@@ -216,7 +347,7 @@ public class Server {
 
         private  void generateRecommendation(PrintWriter out){
             if(activeUsers.get(clientSocket)!=null){
-                List<String> recommendedMenuItems =database.getRecommendedMenu();
+                List<String> recommendedMenuItems =database.generateRecommendedMenu();
                 if (recommendedMenuItems.isEmpty()) {
                     out.println("No menu items available.");
                 } else {

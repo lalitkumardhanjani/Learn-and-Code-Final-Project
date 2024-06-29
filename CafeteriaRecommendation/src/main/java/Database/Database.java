@@ -1,5 +1,7 @@
 package Database;
 
+import java.io.BufferedReader;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -20,7 +22,9 @@ public interface Database {
 
     public boolean deleteMenuItem(int menuId);
 
-    List<String> getRecommendedMenu();
+    List<String> generateRecommendedMenu();
+
+    List<String> getRecommendedMenu() throws SQLException;
 
     List<String> getMenuItems(Connection conn, String mealType) throws SQLException;
 
@@ -28,4 +32,16 @@ public interface Database {
 
     List<String> getFinalizedMenu(int breakfastMenuItemId,int lunchMenuItemId,int dinnerMenuItemId) throws SQLException;
     int rolloutFinalizedMenusStatusUpdate();
+
+    int insertSelectedFoodItemsInDB(BufferedReader in, PrintWriter out, List<Integer> ids);
+
+    List<String> getSelectedFoodItemsEmployees() throws SQLException;
+
+    int giveFoodFeedback(int FoodItemId,int Rating,String comment,int userId);
+
+    List<String> getFoodFeedbackHistory() throws  SQLException;
+
+    List<String> getFinalizedMenu() throws SQLException;
+    List<String> getNotifications();
+
 }
