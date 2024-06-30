@@ -1,7 +1,6 @@
 package Server;
 
-import Database.Database;
-import Database.SqlServerDatabase;
+import Database.*;
 import Authentication.AuthenticationService;
 import Authentication.UserAuthByCredentials;
 import Services.MenuService;
@@ -15,7 +14,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 
 public class ClientHandler implements Runnable {
@@ -102,7 +100,7 @@ public class ClientHandler implements Runnable {
                 new MenuService(database).rolloutRecommendationMenu(out);
                 break;
             case "generateFinalizedMenu":
-                new MenuService(database).generateFinalizedMenu(in, out, parts);
+                new MenuService(database).generateFinalizedMenu(out, parts);
                 break;
             case "rolloutFinalizedMenu":
                 new MenuService(database).rolloutFinalizedMenu(out);
@@ -111,7 +109,7 @@ public class ClientHandler implements Runnable {
                 new MenuService(database).viewRecommendationMenu(out);
                 break;
             case "selectNextDayFoodItems":
-                new MenuService(database).selectNextDayFoodItems(in, out, parts);
+                new MenuService(database).selectNextDayFoodItems(out, parts);
                 break;
             case "viewSelectedFoodItemsEmployees":
                 new MenuService(database).viewSelectedFoodItemsEmployees(out);

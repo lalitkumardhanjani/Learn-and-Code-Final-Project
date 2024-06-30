@@ -2,7 +2,6 @@ package Services;
 
 import Database.Database;
 
-import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -114,7 +113,7 @@ public class MenuService {
         }
     }
 
-    public void generateFinalizedMenu(BufferedReader in, PrintWriter out, String[] parts) throws SQLException {
+    public void generateFinalizedMenu(PrintWriter out, String[] parts) throws SQLException {
         int breakfastMenuItemId = Integer.parseInt(parts[1]);
         int lunchMenuItemId = Integer.parseInt(parts[2]);
         int dinnerMenuItemId = Integer.parseInt(parts[3]);
@@ -163,17 +162,17 @@ public class MenuService {
         }
     }
 
-    public void selectNextDayFoodItems(BufferedReader in, PrintWriter out, String[] parts) {
+    public void selectNextDayFoodItems(PrintWriter out, String[] parts) {
         int breakfastMenuItemId = Integer.parseInt(parts[1]);
         int lunchMenuItemId = Integer.parseInt(parts[2]);
         int dinnerMenuItemId = Integer.parseInt(parts[3]);
         int userId = Integer.parseInt(parts[4]);
-        List<Integer> Ids = new ArrayList<>();
-        Ids.add(breakfastMenuItemId);
-        Ids.add(lunchMenuItemId);
-        Ids.add(dinnerMenuItemId);
-        Ids.add(userId);
-        int isSelected = database.insertSelectedFoodItemsInDB(in, out, Ids);
+        List<Integer> ids = new ArrayList<>();
+        ids.add(breakfastMenuItemId);
+        ids.add(lunchMenuItemId);
+        ids.add(dinnerMenuItemId);
+        ids.add(userId);
+        int isSelected = database.insertSelectedFoodItemsInDB(out,ids);
         if (isSelected == 1) {
             out.println("Selected food items successfully");
         } else {

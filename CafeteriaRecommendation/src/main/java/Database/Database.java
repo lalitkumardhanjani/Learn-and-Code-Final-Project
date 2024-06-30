@@ -23,9 +23,9 @@ public interface Database {
     int rolloutRecommendation();
     List<String> getFinalizedMenu(int breakfastMenuItemId, int lunchMenuItemId, int dinnerMenuItemId) throws SQLException;
     int rolloutFinalizedMenusStatusUpdate();
-    int insertSelectedFoodItemsInDB(BufferedReader in, PrintWriter out, List<Integer> ids);
+    int insertSelectedFoodItemsInDB(PrintWriter out, List<Integer> ids);
     List<String> getSelectedFoodItemsEmployees() throws SQLException;
-    int giveFoodFeedback(int FoodItemId, int Rating, String comment, int userId);
+    int giveFoodFeedback(int foodItemId, int rating, String comment, int userId);
     List<String> getFoodFeedbackHistory() throws SQLException;
     List<String> getFinalizedMenu() throws SQLException;
     List<String> getNotifications();
