@@ -1,14 +1,14 @@
-package Authentication;
+package org.Authentication;
 
-import Database.Database;
+import org.Database.AuthenticationDatabase;
 
 public class UserAuthByCredentials implements AuthenticationService {
     private int userId;
     private String password;
     private int role;
-    private Database database;
+    private AuthenticationDatabase database;
 
-    public UserAuthByCredentials(int userId, String password, int role, Database database) {
+    public UserAuthByCredentials(int userId, String password, int role, AuthenticationDatabase database) {
         this.userId = userId;
         this.password = password;
         this.role = role;

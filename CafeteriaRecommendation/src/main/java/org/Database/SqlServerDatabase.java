@@ -1,12 +1,11 @@
-package Database;
+package org.Database;
 
-import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-public class SqlServerDatabase implements Database {
+public class SqlServerDatabase implements AuthenticationDatabase, MenuManagementDatabase, FeedbackDatabase, NotificationDatabase {
     private UserAuthentication userAuth = new UserAuthentication();
     private MenuManagement menuManagement = new MenuManagement();
     private FeedbackManagement feedbackManagement = new FeedbackManagement();
@@ -17,6 +16,7 @@ public class SqlServerDatabase implements Database {
         return DatabaseConnection.getConnection();
     }
 
+    // AuthenticationDatabase methods
     @Override
     public boolean checkCredentials(int userId, String password, int role) {
         return userAuth.checkCredentials(userId, password, role);
@@ -37,6 +37,7 @@ public class SqlServerDatabase implements Database {
         return userAuth.getUserRole(userId);
     }
 
+    // MenuManagementDatabase methods
     @Override
     public void createMenuItem(String name, double price, Integer mealType, int availability) {
         menuManagement.createMenuItem(name, price, mealType, availability);
@@ -93,7 +94,13 @@ public class SqlServerDatabase implements Database {
     }
 
     @Override
-    public int insertSelectedFoodItemsInDB(PrintWriter out,List<Integer> ids) {
+    public List<String> getFinalizedMenu() throws SQLException {
+        return menuManagement.getFinalizedMenu();
+    }
+
+    // FeedbackDatabase methods
+    @Override
+    public int insertSelectedFoodItemsInDB(List<Integer> ids) {
         return feedbackManagement.insertSelectedFoodItemsInDB(ids);
     }
 
@@ -112,14 +119,9 @@ public class SqlServerDatabase implements Database {
         return feedbackManagement.getFoodFeedbackHistory();
     }
 
-    @Override
-    public List<String> getFinalizedMenu() throws SQLException {
-        return menuManagement.getFinalizedMenu();
-    }
-
+    // NotificationDatabase methods
     @Override
     public List<String> getNotifications() {
         return notificationManagement.getNotifications();
     }
-
 }

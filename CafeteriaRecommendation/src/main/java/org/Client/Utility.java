@@ -1,4 +1,4 @@
-package Client;
+package org.Client;
 
 import java.util.Scanner;
 import java.io.PrintWriter;

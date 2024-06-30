@@ -1,4 +1,4 @@
-package Client;
+package org.Client;
 
 public class MenuDisplay {
     public static void displayMainMenu() {

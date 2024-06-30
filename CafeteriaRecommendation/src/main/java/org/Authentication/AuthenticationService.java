@@ -1,4 +1,4 @@
-package Authentication;
+package org.Authentication;
 
 public interface AuthenticationService {
     boolean login();

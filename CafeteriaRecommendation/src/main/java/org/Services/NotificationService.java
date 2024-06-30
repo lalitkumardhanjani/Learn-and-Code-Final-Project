@@ -1,14 +1,14 @@
-package Services;
+package org.Services;
 
-import Database.Database;
+import org.Database.NotificationDatabase;
 
 import java.io.PrintWriter;
 import java.util.List;
 
 public class NotificationService {
-    private Database database;
+    private NotificationDatabase database;
 
-    public NotificationService(Database database) {
+    public NotificationService(NotificationDatabase database) {
         this.database = database;
     }
 
