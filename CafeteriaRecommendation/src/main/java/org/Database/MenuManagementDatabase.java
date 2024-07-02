@@ -1,5 +1,6 @@
 package org.Database;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -10,7 +11,7 @@ public interface MenuManagementDatabase {
     void updateMenuItem(int menuId, String newName, double newPrice, int newAvailability);
     boolean isValidMenuId(int menuId);
     boolean deleteMenuItem(int menuId);
-    List<String> generateRecommendedMenu();
+    List<String> generateRecommendedMenu() throws SQLException, IOException;
     List<String> getRecommendedMenu() throws SQLException;
     List<String> getMenuItems(Connection conn, String mealType) throws SQLException;
     int rolloutRecommendation();

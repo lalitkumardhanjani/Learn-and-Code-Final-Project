@@ -7,6 +7,7 @@ public class MenuDisplay {
         System.out.println("1. Admin");
         System.out.println("2. Chef");
         System.out.println("3. Employee");
+        System.out.println("4. Exit");
         System.out.print("Enter your choice: ");
     }
 

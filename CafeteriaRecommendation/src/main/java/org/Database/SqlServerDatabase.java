@@ -1,15 +1,16 @@
 package org.Database;
 
-import java.io.PrintWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
 public class SqlServerDatabase implements AuthenticationDatabase, MenuManagementDatabase, FeedbackDatabase, NotificationDatabase {
-    private UserAuthentication userAuth = new UserAuthentication();
-    private MenuManagement menuManagement = new MenuManagement();
-    private FeedbackManagement feedbackManagement = new FeedbackManagement();
-    private NotificationManagement notificationManagement = new NotificationManagement();
+
+    private final UserAuthentication userAuth = new UserAuthentication();
+    private final MenuManagement menuManagement = new MenuManagement();
+    private final FeedbackManagement feedbackManagement = new FeedbackManagement();
+    private final NotificationManagement notificationManagement = new NotificationManagement();
 
     @Override
     public Connection getConnection() throws SQLException {
@@ -19,109 +20,210 @@ public class SqlServerDatabase implements AuthenticationDatabase, MenuManagement
     // AuthenticationDatabase methods
     @Override
     public boolean checkCredentials(int userId, String password, int role) {
-        return userAuth.checkCredentials(userId, password, role);
+        try {
+            return userAuth.checkCredentials(userId, password, role);
+        } catch (Exception e) {
+            System.err.println("Error checking credentials for userId " + userId + ": " + e.getMessage());
+            return false;
+        }
     }
 
     @Override
     public void logLoginAttempt(int userId, boolean success) {
-        userAuth.logLoginAttempt(userId, success);
+        try {
+            userAuth.logLoginAttempt(userId, success);
+        } catch (Exception e) {
+            System.err.println("Error logging login attempt for userId " + userId + ": " + e.getMessage());
+        }
     }
 
     @Override
     public void logLogoutAttempt(int userId, boolean success) {
-        userAuth.logLogoutAttempt(userId, success);
+        try {
+            userAuth.logLogoutAttempt(userId, success);
+        } catch (Exception e) {
+            System.err.println("Error logging logout attempt for userId " + userId + ": " + e.getMessage());
+        }
     }
 
     @Override
     public String getUserRole(int userId) {
-        return userAuth.getUserRole(userId);
+        try {
+            return userAuth.getUserRole(userId);
+        } catch (Exception e) {
+            System.err.println("Error retrieving role for userId " + userId + ": " + e.getMessage());
+            return null;
+        }
     }
 
     // MenuManagementDatabase methods
     @Override
     public void createMenuItem(String name, double price, Integer mealType, int availability) {
-        menuManagement.createMenuItem(name, price, mealType, availability);
+        try {
+            menuManagement.createMenuItem(name, price, mealType, availability);
+        } catch (Exception e) {
+            System.err.println("Error creating menu item: " + name + ": " + e.getMessage());
+        }
     }
 
     @Override
     public List<String> getMenuItems() {
-        return menuManagement.getMenuItems();
+        try {
+            return menuManagement.getMenuItems();
+        } catch (Exception e) {
+            System.err.println("Error retrieving menu items: " + e.getMessage());
+            return List.of(); // Return empty list on failure
+        }
     }
 
     @Override
     public void updateMenuItem(int menuId, String newName, double newPrice, int newAvailability) {
-        menuManagement.updateMenuItem(menuId, newName, newPrice, newAvailability);
+        try {
+            menuManagement.updateMenuItem(menuId, newName, newPrice, newAvailability);
+        } catch (Exception e) {
+            System.err.println("Error updating menu item with id " + menuId + ": " + e.getMessage());
+        }
     }
 
     @Override
     public boolean isValidMenuId(int menuId) {
-        return menuManagement.isValidMenuId(menuId);
+        try {
+            return menuManagement.isValidMenuId(menuId);
+        } catch (Exception e) {
+            System.err.println("Error checking validity of menu item id " + menuId + ": " + e.getMessage());
+            return false;
+        }
     }
 
     @Override
     public boolean deleteMenuItem(int menuId) {
-        return menuManagement.deleteMenuItem(menuId);
+        try {
+            return menuManagement.deleteMenuItem(menuId);
+        } catch (Exception e) {
+            System.err.println("Error deleting menu item with id " + menuId + ": " + e.getMessage());
+            return false;
+        }
     }
 
     @Override
-    public List<String> generateRecommendedMenu() {
-        return menuManagement.generateRecommendedMenu();
+    public List<String> generateRecommendedMenu() throws SQLException, IOException {
+        try {
+            return menuManagement.generateRecommendedMenu();
+        } catch (Exception e) {
+            System.err.println("Error generating recommended menu: " + e.getMessage());
+            throw e; // Re-throw exception to handle it at the caller level
+        }
     }
 
     @Override
     public List<String> getRecommendedMenu() throws SQLException {
-        return menuManagement.getRecommendedMenu();
+        try {
+            return menuManagement.getRecommendedMenu();
+        } catch (Exception e) {
+            System.err.println("Error retrieving recommended menu: " + e.getMessage());
+            throw e; // Re-throw exception to handle it at the caller level
+        }
     }
 
     @Override
     public List<String> getMenuItems(Connection conn, String mealType) throws SQLException {
-        return menuManagement.getMenuItems(conn, mealType);
+        try {
+            return menuManagement.getMenuItems(conn, mealType);
+        } catch (Exception e) {
+            System.err.println("Error retrieving menu items for meal type " + mealType + ": " + e.getMessage());
+            throw e; // Re-throw exception to handle it at the caller level
+        }
     }
 
     @Override
     public int rolloutRecommendation() {
-        return menuManagement.rolloutRecommendation();
+        try {
+            return menuManagement.rolloutRecommendation();
+        } catch (Exception e) {
+            System.err.println("Error rolling out recommendation: " + e.getMessage());
+            return 0; // Indicate failure
+        }
     }
 
     @Override
     public List<String> getFinalizedMenu(int breakfastMenuItemId, int lunchMenuItemId, int dinnerMenuItemId) throws SQLException {
-        return menuManagement.getFinalizedMenu(breakfastMenuItemId, lunchMenuItemId, dinnerMenuItemId);
+        try {
+            return menuManagement.getFinalizedMenu(breakfastMenuItemId, lunchMenuItemId, dinnerMenuItemId);
+        } catch (Exception e) {
+            System.err.println("Error retrieving finalized menu: " + e.getMessage());
+            throw e; // Re-throw exception to handle it at the caller level
+        }
     }
 
     @Override
     public int rolloutFinalizedMenusStatusUpdate() {
-        return menuManagement.rolloutFinalizedMenusStatusUpdate();
+        try {
+            return menuManagement.rolloutFinalizedMenusStatusUpdate();
+        } catch (Exception e) {
+            System.err.println("Error rolling out finalized menu status: " + e.getMessage());
+            return 0; // Indicate failure
+        }
     }
 
     @Override
     public List<String> getFinalizedMenu() throws SQLException {
-        return menuManagement.getFinalizedMenu();
+        try {
+            return menuManagement.getFinalizedMenu();
+        } catch (Exception e) {
+            System.err.println("Error retrieving finalized menu: " + e.getMessage());
+            throw e; // Re-throw exception to handle it at the caller level
+        }
     }
 
     // FeedbackDatabase methods
     @Override
     public int insertSelectedFoodItemsInDB(List<Integer> ids) {
-        return feedbackManagement.insertSelectedFoodItemsInDB(ids);
+        try {
+            return feedbackManagement.insertSelectedFoodItemsInDB(ids);
+        } catch (Exception e) {
+            System.err.println("Error inserting selected food items: " + e.getMessage());
+            return 0; // Indicate failure
+        }
     }
 
     @Override
     public List<String> getSelectedFoodItemsEmployees() throws SQLException {
-        return feedbackManagement.getSelectedFoodItemsEmployees();
+        try {
+            return feedbackManagement.getSelectedFoodItemsEmployees();
+        } catch (Exception e) {
+            System.err.println("Error retrieving selected food items by employees: " + e.getMessage());
+            throw e; // Re-throw exception to handle it at the caller level
+        }
     }
 
     @Override
     public int giveFoodFeedback(int foodItemId, int rating, String comment, int userId) {
-        return feedbackManagement.giveFoodFeedback(foodItemId, rating, comment, userId);
+        try {
+            return feedbackManagement.giveFoodFeedback(foodItemId, rating, comment, userId);
+        } catch (Exception e) {
+            System.err.println("Error giving food feedback for food item id " + foodItemId + ": " + e.getMessage());
+            return 0; // Indicate failure
+        }
     }
 
     @Override
     public List<String> getFoodFeedbackHistory() throws SQLException {
-        return feedbackManagement.getFoodFeedbackHistory();
+        try {
+            return feedbackManagement.getFoodFeedbackHistory();
+        } catch (Exception e) {
+            System.err.println("Error retrieving food feedback history: " + e.getMessage());
+            throw e; // Re-throw exception to handle it at the caller level
+        }
     }
 
     // NotificationDatabase methods
     @Override
     public List<String> getNotifications() {
-        return notificationManagement.getNotifications();
+        try {
+            return notificationManagement.getNotifications();
+        } catch (Exception e) {
+            System.err.println("Error retrieving notifications: " + e.getMessage());
+            return List.of(); // Return empty list on failure
+        }
     }
 }

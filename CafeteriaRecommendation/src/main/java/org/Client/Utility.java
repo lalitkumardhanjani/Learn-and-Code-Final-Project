@@ -13,7 +13,6 @@ public class Utility {
     }
 
     public static void logout(PrintWriter out) {
-        out.println("logout");
         System.out.println("Logged out successfully.");
     }
 }

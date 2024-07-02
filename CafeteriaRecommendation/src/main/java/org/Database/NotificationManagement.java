@@ -5,19 +5,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NotificationManagement {
+
     public List<String> getNotifications() {
         List<String> notifications = new ArrayList<>();
+        String query = "SELECT Message FROM Notification";
+
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT Message FROM Notification")) {
+             ResultSet rs = stmt.executeQuery(query)) {
+
             while (rs.next()) {
                 String message = rs.getString("Message");
                 String formattedItem = String.format("%-20s", message);
                 notifications.add(formattedItem);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error retrieving notifications: " + e.getMessage());
+        } catch (NullPointerException e) {
+            System.err.println("Null value encountered: " + e.getMessage());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.err.println("Array index out of bounds: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Illegal argument provided: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
         }
+
         return notifications;
     }
 }

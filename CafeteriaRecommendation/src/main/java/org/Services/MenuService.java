@@ -3,6 +3,7 @@ package org.Services;
 import org.Database.MenuManagementDatabase;
 import org.Database.FeedbackDatabase;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -18,140 +19,278 @@ public class MenuService {
     }
 
     public void handleMenuCreation(PrintWriter out, String[] parts, Integer userId) {
-        if (userId == null) {
-            out.println("Not authorized.");
-            return;
+        try {
+            if (userId == null) {
+                out.println("Not authorized.");
+                return;
+            }
+
+            if (parts.length < 5) {
+                out.println("Invalid input for creating menu item.");
+                return;
+            }
+
+            String name = parts[1];
+            double price = Double.parseDouble(parts[2]);
+            Integer mealType = Integer.parseInt(parts[3]);
+            int availability = Integer.parseInt(parts[4]);
+
+            menuDatabase.createMenuItem(name, price, mealType, availability);
+            out.println("Menu item created successfully.");
+        } catch (NumberFormatException e) {
+            out.println("Error: Invalid number format in input data. " + e.getMessage());
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while creating menu item: " + e.getMessage());
+            e.printStackTrace();
         }
-
-        String name = parts[1];
-        double price = Double.parseDouble(parts[2]);
-        Integer mealType = Integer.parseInt(parts[3]);
-        int availability = Integer.parseInt(parts[4]);
-
-        menuDatabase.createMenuItem(name, price, mealType, availability);
-        out.println("Menu item created successfully.");
     }
 
     public void handleUpdateMenuItem(PrintWriter out, String[] parts, Integer userId) {
-        if (userId == null) {
-            out.println("Not authorized.");
-            return;
+        try {
+            if (userId == null) {
+                out.println("Not authorized.");
+                return;
+            }
+
+            if (parts.length < 5) {
+                out.println("Invalid input for updating menu item.");
+                return;
+            }
+
+            int menuId = Integer.parseInt(parts[1]);
+            String newName = parts[2];
+            Double newPrice = Double.parseDouble(parts[3]);
+            int newAvailability = Integer.parseInt(parts[4]);
+
+            menuDatabase.updateMenuItem(menuId, newName, newPrice, newAvailability);
+            out.println("Menu item updated successfully.");
+        } catch (NumberFormatException e) {
+            out.println("Error: Invalid number format in input data. " + e.getMessage());
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while updating menu item: " + e.getMessage());
+            e.printStackTrace();
         }
-
-        if (parts.length < 5) {
-            out.println("Invalid input for updating menu item.");
-            return;
-        }
-
-        int menuId = Integer.parseInt(parts[1]);
-        String newName = parts[2];
-        Double newPrice = Double.parseDouble(parts[3]);
-        int newAvailability = Integer.parseInt(parts[4]);
-
-        menuDatabase.updateMenuItem(menuId, newName, newPrice, newAvailability);
-        out.println("Menu item updated successfully.");
     }
 
     public void handleDeleteMenuItem(PrintWriter out, String[] parts, Integer userId) {
-        if (userId == null) {
-            out.println("Not authorized.");
-            return;
-        }
+        try {
+            if (userId == null) {
+                out.println("Not authorized.");
+                return;
+            }
 
-        int menuId = Integer.parseInt(parts[1]);
-        boolean isDeleted = menuDatabase.deleteMenuItem(menuId);
-        if (isDeleted) {
-            out.println("Menu item deleted successfully.");
-        } else {
-            out.println("Failed to delete menu item.");
+            if (parts.length < 2) {
+                out.println("Invalid input for deleting menu item.");
+                return;
+            }
+
+            int menuId = Integer.parseInt(parts[1]);
+            boolean isDeleted = menuDatabase.deleteMenuItem(menuId);
+            if (isDeleted) {
+                out.println("Menu item deleted successfully.");
+            } else {
+                out.println("Failed to delete menu item.");
+            }
+        } catch (NumberFormatException e) {
+            out.println("Error: Invalid number format in input data. " + e.getMessage());
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while deleting menu item: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     public void handleViewMenu(PrintWriter out, Integer userId) {
-        if (userId == null) {
-            out.println("Not authorized.");
-            return;
-        }
+        try {
+            if (userId == null) {
+                out.println("Not authorized.");
+                return;
+            }
 
-        List<String> menuItems = menuDatabase.getMenuItems();
-        printMenu(out, menuItems, "----- Cafeteria Menu -----");
+            List<String> menuItems = menuDatabase.getMenuItems();
+            printMenu(out, menuItems, "----- Cafeteria Menu -----");
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while viewing menu: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void generateRecommendation(PrintWriter out, Integer userId) {
-        if (userId == null) {
-            out.println("Not authorized.");
-            return;
-        }
+        try {
+            if (userId == null) {
+                out.println("Not authorized.");
+                return;
+            }
 
-        List<String> recommendedMenuItems = menuDatabase.generateRecommendedMenu();
-        printMenu(out, recommendedMenuItems, "----- Recommended Cafeteria Menu -----");
+            List<String> recommendedMenuItems = menuDatabase.generateRecommendedMenu();
+            if (recommendedMenuItems.isEmpty()) {
+                out.println("No menu items available.");
+            } else {
+                out.println("----- Recommended Cafeteria Menu -----");
+                out.println(String.format("%-15s %-20s %-10s %-20s %-15s %-15s", "Id", "Item", "Price", "Meal Type", "Avg Rating", "Avg Comment"));
+                out.println("-----------------------------------------------------------------");
+                for (String menuItem : recommendedMenuItems) {
+                    String[] parts = menuItem.split("\\^");
+                    if (parts.length >= 6) {
+                        out.println(String.format("%-15s %-20s %-10s %-20s %-15s %-15s",
+                                parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
+                    } else {
+                        out.println("Invalid format for menu item: " + menuItem);
+                    }
+                }
+                out.println("-----------------------------------------------------------------");
+            }
+            out.println("END");
+        } catch (SQLException e) {
+            out.println("Database error while generating recommendation menu: " + e.getMessage());
+            e.printStackTrace();
+        } catch (IOException e) {
+            out.println("I/O error while generating recommendation menu: " + e.getMessage());
+            e.printStackTrace();
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while generating recommendation menu: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void rolloutRecommendationMenu(PrintWriter out) {
-        int isRollout = menuDatabase.rolloutRecommendation();
-        out.println(isRollout == 1 ? "Roll out successfully" : "Roll out have some issue");
+        try {
+            int isRollout = menuDatabase.rolloutRecommendation();
+            out.println(isRollout == 1 ? "Roll out successfully" : "Roll out has some issues");
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while rolling out recommendation menu: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    public void generateFinalizedMenu(PrintWriter out, String[] parts) throws SQLException {
-        int breakfastMenuItemId = Integer.parseInt(parts[1]);
-        int lunchMenuItemId = Integer.parseInt(parts[2]);
-        int dinnerMenuItemId = Integer.parseInt(parts[3]);
+    public void generateFinalizedMenu(PrintWriter out, String[] parts) {
+        try {
+            if (parts.length < 4) {
+                out.println("Invalid input for generating finalized menu.");
+                return;
+            }
 
-        List<String> finalizedMenu = menuDatabase.getFinalizedMenu(breakfastMenuItemId, lunchMenuItemId, dinnerMenuItemId);
-        printMenu(out, finalizedMenu, "----- Finalized Cafeteria Menu -----");
+            int breakfastMenuItemId = Integer.parseInt(parts[1]);
+            int lunchMenuItemId = Integer.parseInt(parts[2]);
+            int dinnerMenuItemId = Integer.parseInt(parts[3]);
+
+            List<String> finalizedMenu = menuDatabase.getFinalizedMenu(breakfastMenuItemId, lunchMenuItemId, dinnerMenuItemId);
+            printMenu(out, finalizedMenu, "----- Finalized Cafeteria Menu -----");
+        } catch (NumberFormatException e) {
+            out.println("Error: Invalid number format in input data. " + e.getMessage());
+        } catch (SQLException e) {
+            out.println("Database error while generating finalized menu: " + e.getMessage());
+            e.printStackTrace();
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while generating finalized menu: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void rolloutFinalizedMenu(PrintWriter out) {
-        int isRollout = menuDatabase.rolloutFinalizedMenusStatusUpdate();
-        out.println(isRollout == 1 ? "Roll out successfully" : "Roll out have some issue");
+        try {
+            int isRollout = menuDatabase.rolloutFinalizedMenusStatusUpdate();
+            out.println(isRollout == 1 ? "Roll out successfully" : "Roll out has some issues");
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while rolling out finalized menu: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    public void viewRecommendationMenu(PrintWriter out) throws SQLException {
-        List<String> recommendedMenu = menuDatabase.getRecommendedMenu();
-        printMenu(out, recommendedMenu, "----- Recommended Cafeteria Menu -----");
+    public void viewRecommendationMenu(PrintWriter out) {
+        try {
+            List<String> recommendedMenu = menuDatabase.getRecommendedMenu();
+            if (recommendedMenu.isEmpty()) {
+                out.println("No menu items available.");
+            } else {
+                out.println("----- Recommended Cafeteria Menu -----");
+                out.println(String.format("%-15s %-20s %-10s %-20s %-15s %-15s", "Id", "Item", "Price", "Meal Type", "Avg Rating", "Avg Comment"));
+                out.println("-----------------------------------------------------------------");
+                for (String menuItem : recommendedMenu) {
+                    out.println(menuItem);
+                }
+                out.println("-----------------------------------------------------------------");
+            }
+            out.println("END");
+        } catch (SQLException e) {
+            out.println("Database error while viewing recommendation menu: " + e.getMessage());
+            e.printStackTrace();
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while viewing recommendation menu: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void selectNextDayFoodItems(PrintWriter out, String[] parts) {
-        int breakfastMenuItemId = Integer.parseInt(parts[1]);
-        int lunchMenuItemId = Integer.parseInt(parts[2]);
-        int dinnerMenuItemId = Integer.parseInt(parts[3]);
-        int userId = Integer.parseInt(parts[4]);
-        List<Integer> ids = new ArrayList<>();
-        ids.add(breakfastMenuItemId);
-        ids.add(lunchMenuItemId);
-        ids.add(dinnerMenuItemId);
-        ids.add(userId);
-        int isSelected = feedbackDatabase.insertSelectedFoodItemsInDB(ids);
-        if (isSelected == 1) {
-            out.println("Selected food items successfully");
-        } else {
-            out.println("Selected food items have some issue");
+        try {
+            if (parts.length < 5) {
+                out.println("Invalid input for selecting next day food items.");
+                return;
+            }
+
+            int breakfastMenuItemId = Integer.parseInt(parts[1]);
+            int lunchMenuItemId = Integer.parseInt(parts[2]);
+            int dinnerMenuItemId = Integer.parseInt(parts[3]);
+            int userId = Integer.parseInt(parts[4]);
+
+            List<Integer> ids = new ArrayList<>();
+            ids.add(breakfastMenuItemId);
+            ids.add(lunchMenuItemId);
+            ids.add(dinnerMenuItemId);
+            ids.add(userId);
+
+            int isSelected = feedbackDatabase.insertSelectedFoodItemsInDB(ids);
+            out.println(isSelected == 1 ? "Selected food items successfully" : "Selected food items have some issues");
+        } catch (NumberFormatException e) {
+            out.println("Error: Invalid number format in input data. " + e.getMessage());
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while selecting next day food items: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    public void viewSelectedFoodItemsEmployees(PrintWriter out) throws SQLException {
-        List<String> selectedFoodItemsByEmployees = feedbackDatabase.getSelectedFoodItemsEmployees();
-        printMenu(out, selectedFoodItemsByEmployees, "----- Selected Food Items By Employees -----");
+    public void viewSelectedFoodItemsEmployees(PrintWriter out) {
+        try {
+            List<String> selectedFoodItemsByEmployees = feedbackDatabase.getSelectedFoodItemsEmployees();
+            printMenu(out, selectedFoodItemsByEmployees, "----- Selected Food Items By Employees -----");
+        } catch (SQLException e) {
+            out.println("Database error while viewing selected food items by employees: " + e.getMessage());
+            e.printStackTrace();
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while viewing selected food items by employees: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    public void viewFinalizedMenu(PrintWriter out) throws SQLException {
-        // Assuming getFinalizedMenu is intended to be called on menuDatabase
-        List<String> finalizedMenu = menuDatabase.getFinalizedMenu();
-        printMenu(out, finalizedMenu, "----- Finalized Menu -----");
+    public void viewFinalizedMenu(PrintWriter out) {
+        try {
+            List<String> finalizedMenu = menuDatabase.getFinalizedMenu();
+            printMenu(out, finalizedMenu, "----- Finalized Menu -----");
+        } catch (SQLException e) {
+            out.println("Database error while viewing finalized menu: " + e.getMessage());
+            e.printStackTrace();
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while viewing finalized menu: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void printMenu(PrintWriter out, List<String> menuItems, String header) {
-        if (menuItems.isEmpty()) {
-            out.println("No menu items available.");
-        } else {
-            out.println(header);
-            out.println(String.format("%-15s %-20s %-10s %-15s %-15s", "Id", "Item", "Price", "Meal ID", "IsAvailable"));
-            out.println("--------------------------------------------");
-            for (String menuItem : menuItems) {
-                out.println(menuItem);
+        try {
+            if (menuItems.isEmpty()) {
+                out.println("No menu items available.");
+            } else {
+                out.println(header);
+                out.println(String.format("%-15s %-20s %-10s %-15s %-15s", "Id", "Item", "Price", "Meal ID", "IsAvailable"));
+                out.println("--------------------------------------------");
+                for (String menuItem : menuItems) {
+                    out.println(menuItem);
+                }
+                out.println("--------------------------------------------");
             }
-            out.println("--------------------------------------------");
+            out.println("END");
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while printing menu: " + e.getMessage());
+            e.printStackTrace();
         }
-        out.println("END");
     }
 }

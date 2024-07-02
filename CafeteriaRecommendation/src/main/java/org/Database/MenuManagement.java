@@ -1,4 +1,5 @@
 package org.Database;
+
 import org.Recommendation.ParseSentimentWords;
 import org.Recommendation.SentimentAnalyzer;
 
@@ -19,14 +20,22 @@ public class MenuManagement {
             stmt.setInt(4, availability);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error while inserting menu item: " + e.getMessage());
+        } catch (NullPointerException e) {
+            System.err.println("Null value encountered while inserting menu item: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Illegal argument provided: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error while inserting menu item: " + e.getMessage());
         }
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO Notification (Message,DateTime) VALUES ('New Food Item is added into the Menu',GETDATE())")) {
+             PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO Notification (Message, DateTime) VALUES ('New Food Item is added into the Menu', GETDATE())")) {
             insertStmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error while inserting notification: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error while inserting notification: " + e.getMessage());
         }
     }
 
@@ -46,79 +55,104 @@ public class MenuManagement {
                 menuItems.add(formattedItem);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error while fetching menu items: " + e.getMessage());
+        } catch (NullPointerException e) {
+            System.err.println("Null value encountered while fetching menu items: " + e.getMessage());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.err.println("Array index out of bounds: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error while fetching menu items: " + e.getMessage());
         }
         return menuItems;
     }
 
     private void generateFinalizedMenu(Scanner scanner, BufferedReader in, PrintWriter out) throws IOException {
-
-        System.out.println("Enter the Menu Item Id for the Finalized Breakfast");
-        int breakfastMenuItemId=scanner.nextInt();
-        System.out.println("Enter the Menu Item Id for the Finalized Lunch");
-        int lunchMenuItemId = scanner.nextInt();
-        System.out.println("Enter the Menu Item Id for the Finalized Dinner");
-        int dinnerMenuItemId = scanner.nextInt();
-        out.println("generateFinalizedMenu:"+breakfastMenuItemId+":"+lunchMenuItemId+":"+dinnerMenuItemId);
-        String response;
-        while (!(response = in.readLine()).equals("END")) {
-            System.out.println(response);
+        try {
+            System.out.println("Enter the Menu Item Id for the Finalized Breakfast");
+            int breakfastMenuItemId = scanner.nextInt();
+            System.out.println("Enter the Menu Item Id for the Finalized Lunch");
+            int lunchMenuItemId = scanner.nextInt();
+            System.out.println("Enter the Menu Item Id for the Finalized Dinner");
+            int dinnerMenuItemId = scanner.nextInt();
+            out.println("generateFinalizedMenu:" + breakfastMenuItemId + ":" + lunchMenuItemId + ":" + dinnerMenuItemId);
+            String response;
+            while (!(response = in.readLine()).equals("END")) {
+                System.out.println(response);
+            }
+        } catch (InputMismatchException e) {
+            System.err.println("Invalid input: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("I/O error: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
         }
     }
 
     private static void viewRecommendationMenu(BufferedReader in, PrintWriter out) throws IOException {
-        out.println("viewRecommendationMenu");
-        String response;
-        while (!(response = in.readLine()).equals("END")) {
-            System.out.println(response);
+        try {
+            out.println("viewRecommendationMenu");
+            String response;
+            while (!(response = in.readLine()).equals("END")) {
+                System.out.println(response);
+            }
+        } catch (IOException e) {
+            System.err.println("I/O error: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
         }
     }
+
     public void updateMenuItem(int menuId, String newName, double newPrice, int newAvailability) {
         StringBuilder queryBuilder = new StringBuilder("UPDATE Menu SET ");
         List<Object> params = new ArrayList<>();
-
         boolean updateRequired = false;
 
-        if (newName != null && !newName.isEmpty()) {
-            queryBuilder.append("name = ?, ");
-            params.add(newName);
-            updateRequired = true;
-        }
-        if (newPrice >= 0) {
-            queryBuilder.append("price = ?, ");
-            params.add(newPrice);
-            updateRequired = true;
-        }
-        if (newAvailability == 0 || newAvailability == 1) {
-            queryBuilder.append("isavailable = ?, ");
-            params.add(newAvailability);
-            updateRequired = true;
-        }
-
-        if (!updateRequired) {
-            System.out.println("No fields to update. Update request ignored.");
-            return;
-        }
-
-        queryBuilder.delete(queryBuilder.length() - 2, queryBuilder.length());
-        queryBuilder.append(" WHERE Id = ?");
-        params.add(menuId);
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(queryBuilder.toString())) {
-            for (int i = 0; i < params.size(); i++) {
-                stmt.setObject(i + 1, params.get(i));
+        try {
+            if (newName != null && !newName.isEmpty()) {
+                queryBuilder.append("name = ?, ");
+                params.add(newName);
+                updateRequired = true;
             }
-            int rowsUpdated = stmt.executeUpdate();
-            System.out.println("Rows updated: " + rowsUpdated);
-
-            String notificationMessage = "Food item with Menu Id " + menuId + " is updated";
-            try (PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO Notification (Message, DateTime) VALUES (?, GETDATE())")) {
-                insertStmt.setString(1, notificationMessage);
-                insertStmt.executeUpdate();
+            if (newPrice >= 0) {
+                queryBuilder.append("price = ?, ");
+                params.add(newPrice);
+                updateRequired = true;
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            if (newAvailability == 0 || newAvailability == 1) {
+                queryBuilder.append("isavailable = ?, ");
+                params.add(newAvailability);
+                updateRequired = true;
+            }
+
+            if (!updateRequired) {
+                System.out.println("No fields to update. Update request ignored.");
+                return;
+            }
+
+            queryBuilder.delete(queryBuilder.length() - 2, queryBuilder.length());
+            queryBuilder.append(" WHERE Id = ?");
+            params.add(menuId);
+
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(queryBuilder.toString())) {
+                for (int i = 0; i < params.size(); i++) {
+                    stmt.setObject(i + 1, params.get(i));
+                }
+                int rowsUpdated = stmt.executeUpdate();
+                System.out.println("Rows updated: " + rowsUpdated);
+
+                String notificationMessage = "Food item with Menu Id " + menuId + " is updated";
+                try (PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO Notification (Message, DateTime) VALUES (?, GETDATE())")) {
+                    insertStmt.setString(1, notificationMessage);
+                    insertStmt.executeUpdate();
+                }
+            } catch (SQLException e) {
+                System.err.println("Error while updating menu item: " + e.getMessage());
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid argument: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
         }
     }
 
@@ -129,7 +163,10 @@ public class MenuManagement {
             int rowAffected = stmt.executeUpdate();
             return rowAffected > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error while deleting menu item: " + e.getMessage());
+            return false;
+        } catch (Exception e) {
+            System.err.println("Unexpected error while deleting menu item: " + e.getMessage());
             return false;
         }
     }
@@ -143,24 +180,24 @@ public class MenuManagement {
             int count = rs.getInt("count");
             return count > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error while validating menu item ID: " + e.getMessage());
+            return false;
+        } catch (Exception e) {
+            System.err.println("Unexpected error while validating menu item ID: " + e.getMessage());
             return false;
         }
     }
 
-    public List<String> generateRecommendedMenu() {
+    public List<String> generateRecommendedMenu() throws IOException {
         List<String> recommendedMenuItems = new ArrayList<>();
         Map<Integer, Double> foodSentimentRatings = new HashMap<>();
+        Map<Integer, List<Integer>> foodRatings = new HashMap<>(); // Store ratings for average calculation
+        SentimentAnalyzer sentimentAnalyzer = new SentimentAnalyzer(new ParseSentimentWords());
 
-        try {
-            // Initialize the parser and sentiment analyzer
-            ParseSentimentWords parser = new ParseSentimentWords();
-            SentimentAnalyzer sentimentAnalyzer = new SentimentAnalyzer(parser);
-
+        try (Connection conn = DatabaseConnection.getConnection()) {
             // Step 1: Retrieve feedback data
             String feedbackQuery = "SELECT FoodItemId, Rating, Comments FROM FoodFeedbackHistory";
-            try (Connection conn = DatabaseConnection.getConnection();
-                 Statement stmt = conn.createStatement();
+            try (Statement stmt = conn.createStatement();
                  ResultSet rs = stmt.executeQuery(feedbackQuery)) {
 
                 while (rs.next()) {
@@ -168,47 +205,42 @@ public class MenuManagement {
                     int rating = rs.getInt("Rating");
                     String comments = rs.getString("Comments");
 
-                    // Step 2: Perform sentiment analysis on comments
-                    double sentimentScore = sentimentAnalyzer.calculateSentimentScore(comments);
+                    // Analyze comments and store data
+                    sentimentAnalyzer.analyzeComments(foodItemId, comments);
 
-                    // Step 3: Calculate weighted rating
-                    double weightedRating = (rating + sentimentScore) / 2.0;
-
-                    // Step 4: Accumulate sentiment scores for each food item
-                    foodSentimentRatings.put(foodItemId,
-                            foodSentimentRatings.getOrDefault(foodItemId, 0.0) + weightedRating);
+                    // Update ratings
+                    foodRatings.putIfAbsent(foodItemId, new ArrayList<>());
+                    foodRatings.get(foodItemId).add(rating);
                 }
-
-                // Step 5: Calculate average ratings
-                Map<Integer, Double> averageRatings = new HashMap<>();
-                for (Map.Entry<Integer, Double> entry : foodSentimentRatings.entrySet()) {
-                    int foodItemId = entry.getKey();
-                    double totalRating = entry.getValue();
-                    averageRatings.put(foodItemId, totalRating); // Assuming each item has a single feedback entry for simplicity
-                }
-
-                // Step 6: Generate recommendations for each meal type
-                recommendedMenuItems.addAll(getTopRatedItems(averageRatings, "Breakfast", conn));
-                recommendedMenuItems.addAll(getTopRatedItems(averageRatings, "Lunch", conn));
-                recommendedMenuItems.addAll(getTopRatedItems(averageRatings, "Dinner", conn));
-
-            } catch (SQLException e) {
-                e.printStackTrace();
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            // Step 2: Calculate average ratings and generate recommendations
+            for (Map.Entry<Integer, List<Integer>> entry : foodRatings.entrySet()) {
+                int foodItemId = entry.getKey();
+                List<Integer> ratings = entry.getValue();
+                double averageRating = sentimentAnalyzer.calculateAverageRating(foodItemId, ratings);
+                foodSentimentRatings.put(foodItemId, averageRating);
+            }
 
+            // Get top-rated items for each meal type (only top 3)
+            recommendedMenuItems.addAll(getTopRatedItems(foodSentimentRatings, "Breakfast", 3, conn));
+            recommendedMenuItems.addAll(getTopRatedItems(foodSentimentRatings, "Lunch", 3, conn));
+            recommendedMenuItems.addAll(getTopRatedItems(foodSentimentRatings, "Dinner", 3, conn));
+        } catch (SQLException e) {
+            System.err.println("Error while generating recommended menu: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error while generating recommended menu: " + e.getMessage());
+        }
+        insertRecommendedMenuItems(recommendedMenuItems); // Inserting with delimiter ^ for easy parsing
         return recommendedMenuItems;
     }
 
-    private List<String> getTopRatedItems(Map<Integer, Double> averageRatings, String mealType, Connection conn) throws SQLException {
+    private List<String> getTopRatedItems(Map<Integer, Double> averageRatings, String mealType, int limit, Connection conn) {
         List<String> topRatedItems = new ArrayList<>();
-        String query = "SELECT TOP 3 Menu.Id, Menu.Name, Menu.Price FROM Menu " +
-                "JOIN MealType ON Menu.MealId = MealType.Id " +
+        String query = "SELECT TOP " + limit + " Menu.Id, Menu.Name, Menu.Price, MealType.MealType " +
+                "FROM Menu JOIN MealType ON Menu.MealId = MealType.Id " +
                 "WHERE Menu.IsAvailable = 1 AND MealType.MealType = ? " +
-                "ORDER BY averageRatings DESC";
+                "ORDER BY (SELECT AVG(Rating) FROM FoodFeedbackHistory WHERE FoodItemId = Menu.Id) DESC";
 
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, mealType);
@@ -217,14 +249,95 @@ public class MenuManagement {
                     int id = rs.getInt("Id");
                     String name = rs.getString("Name");
                     double price = rs.getDouble("Price");
-                    String formattedItem = String.format("%-15d %-20s ₹%-9.2f %-20s", id, name, price, mealType);
+                    String mealTypeStr = rs.getString("MealType");
+
+                    // Get top comments
+                    List<String> topComments = SentimentAnalyzer.getTopComments(id);
+
+                    // Calculate average rating
+                    double averageRating = averageRatings.getOrDefault(id, 0.0);
+
+                    // Format item with delimiter ^
+                    String formattedItem = String.format("%d^%s^%.2f^%s^%.2f^%s",
+                            id, name, price, mealTypeStr, averageRating, String.join(" ", topComments));
+
                     topRatedItems.add(formattedItem);
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("Error while fetching top-rated items: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error while fetching top-rated items: " + e.getMessage());
         }
         return topRatedItems;
     }
-    public List<String> getMenuItems(Connection conn, String mealType) throws SQLException {
+
+    public void insertRecommendedMenuItems(List<String> recommendedMenuItems) {
+        String insertSql = "INSERT INTO RecommendedMenu (FoodItemId, Name, Price, Mealtype, Status, [Avg Rating], [Avg Comments]) " +
+                "VALUES (?, ?, ?, ?,-1, ?, ?)";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+
+            for (String menuItem : recommendedMenuItems) {
+                // Split using delimiter ^
+                String[] parts = menuItem.split("\\^");
+
+                if (parts.length < 6) {
+                    System.err.println("Invalid format for menu item: " + menuItem);
+                    continue; // Skip this item or handle the error appropriately
+                }
+
+                int foodItemId;
+                try {
+                    foodItemId = Integer.parseInt(parts[0].trim());
+                } catch (NumberFormatException e) {
+                    System.err.println("Error parsing FoodItemId: " + parts[0]);
+                    continue; // Skip this item or handle the error appropriately
+                }
+
+                String name = parts[1].trim();
+                double price;
+                try {
+                    price = Double.parseDouble(parts[2].trim());
+                } catch (NumberFormatException e) {
+                    System.err.println("Error parsing price: " + parts[2]);
+                    continue; // Skip this item or handle the error appropriately
+                }
+
+                String mealType = parts[3].trim();
+                double avgRating;
+                try {
+                    avgRating = Double.parseDouble(parts[4].trim());
+                } catch (NumberFormatException e) {
+                    System.err.println("Error parsing average rating: " + parts[4]);
+                    continue; // Skip this item or handle the error appropriately
+                }
+
+                String avgComments = parts[5].trim();
+
+                stmt.setInt(1, foodItemId);
+                stmt.setString(2, name);
+                stmt.setDouble(3, price);
+                stmt.setString(4, mealType);
+                stmt.setDouble(5, avgRating);
+                stmt.setString(6, avgComments);
+
+                stmt.addBatch(); // Add the statement to the batch for batch processing
+            }
+
+            int[] result = stmt.executeBatch(); // Execute batch insert
+
+            // Handle success or failure based on result array if needed
+
+        } catch (SQLException e) {
+            System.err.println("Error while inserting recommended menu items: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error while inserting recommended menu items: " + e.getMessage());
+        }
+    }
+
+    public List<String> getMenuItems(Connection conn, String mealType) {
         List<String> menuItems = new ArrayList<>();
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT DISTINCT TOP 3 Menu.Id as Id, Menu.Name as Name, Menu.Price as Price, MealType.MealType as MealType FROM FoodFeedbackHistory JOIN [User] ON FoodFeedbackHistory.UserId = [User].Id JOIN Menu ON Menu.Id = FoodFeedbackHistory.FoodItemId JOIN MealType ON Menu.MealId = MealType.Id WHERE Menu.IsAvailable = 1 AND MealType.MealType = '" + mealType + "'")) {
@@ -247,13 +360,17 @@ public class MenuManagement {
                     insertStmt.executeUpdate();
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("Error while fetching menu items: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error while fetching menu items: " + e.getMessage());
         }
         return menuItems;
     }
 
-    public List<String> getRecommendedMenu() throws SQLException {
+    public List<String> getRecommendedMenu() {
         List<String> menuItems = new ArrayList<>();
-        String query = "SELECT FoodItemId, Name, Price, MealType, Status FROM RecommendedMenu WHERE Status = 0";
+        String query = "SELECT FoodItemId, Name, Price, MealType, [Avg Rating], [Avg Comments], Status FROM RecommendedMenu WHERE Status = 0";
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
@@ -262,10 +379,17 @@ public class MenuManagement {
                 String name = rs.getString("Name");
                 double price = rs.getDouble("Price");
                 String mealType = rs.getString("MealType");
-                String formattedItem = String.format("%-15d %-20s ₹%-9.2f %-20s", foodItemId, name, price, mealType);
+                Double avgRating = rs.getDouble("Avg Rating");
+                String comment = rs.getString("Avg Comments");
+                String formattedItem = String.format("%-15d %-20s ₹%-9.2f %-20s %-9.2f %-20s", foodItemId, name, price, mealType, avgRating, comment);
                 menuItems.add(formattedItem);
             }
+        } catch (SQLException e) {
+            System.err.println("Error while fetching recommended menu: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error while fetching recommended menu: " + e.getMessage());
         }
+        System.out.println(menuItems);
         return menuItems;
     }
 
@@ -275,12 +399,15 @@ public class MenuManagement {
             stmt.executeUpdate();
             return 1;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error while rolling out recommendation: " + e.getMessage());
+            return 0;
+        } catch (Exception e) {
+            System.err.println("Unexpected error while rolling out recommendation: " + e.getMessage());
             return 0;
         }
     }
 
-    public List<String> getFinalizedMenu(int breakfastMenuItemId, int lunchMenuItemId, int dinnerMenuItemId) throws SQLException {
+    public List<String> getFinalizedMenu(int breakfastMenuItemId, int lunchMenuItemId, int dinnerMenuItemId) {
         List<String> finalizedMenuItems = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement("SELECT Menu.Id, Menu.Name as Name, Menu.Price as Price, MealType.MealType as MealType FROM Menu JOIN MealType ON Menu.MealId = MealType.Id WHERE Menu.Id IN (?, ?, ?)")) {
@@ -304,6 +431,10 @@ public class MenuManagement {
                     }
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("Error while fetching finalized menu: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error while fetching finalized menu: " + e.getMessage());
         }
         return finalizedMenuItems;
     }
@@ -314,7 +445,10 @@ public class MenuManagement {
             stmt.executeUpdate();
             return 1;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error while updating finalized menu status: " + e.getMessage());
+            return 0;
+        } catch (Exception e) {
+            System.err.println("Unexpected error while updating finalized menu status: " + e.getMessage());
             return 0;
         }
     }
@@ -332,6 +466,10 @@ public class MenuManagement {
                     finalizedMenuItems.add(formattedItem);
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("Error while fetching today's finalized menu: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error while fetching today's finalized menu: " + e.getMessage());
         }
         return finalizedMenuItems;
     }
