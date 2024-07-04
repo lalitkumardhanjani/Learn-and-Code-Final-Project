@@ -6,6 +6,16 @@ import java.util.List;
 
 public class NotificationManagement {
 
+    public static void addNotification(String message) {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO Notification (Message, DateTime) VALUES (?, GETDATE())")) {
+            stmt.setString(1, message);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error while inserting notification: " + e.getMessage());
+        }
+    }
+
     public List<String> getNotifications() {
         List<String> notifications = new ArrayList<>();
         String query = "SELECT Message FROM Notification";

@@ -44,16 +44,18 @@ public class SentimentAnalyzer {
         return sum / ratings.size();
     }
 
-    public static List<String> getTopComments(int foodItemId) {
+    public static String getTopComment(int foodItemId) {
         List<String> comments = foodItemComments.getOrDefault(foodItemId, Collections.emptyList());
 
-        // Sort comments based on frequency of positive and negative words
-        comments.sort((c1, c2) -> Double.compare(calculateSentimentScore(c2), calculateSentimentScore(c1))); // Higher sentiment score first
+        // Sort comments based on sentiment score (optional)
+        // comments.sort((c1, c2) -> Double.compare(calculateSentimentScore(c2), calculateSentimentScore(c1))); // Higher sentiment score first
 
-        return comments.size() > 3 ? comments.subList(0, 3) : comments;
+        // Return the first element (assuming comments are not empty)
+        return comments.isEmpty() ? null : comments.get(0);
     }
 
-    private static double calculateSentimentScore(String comments) {
+
+    public static double calculateSentimentScore(String comments) {
         if (comments == null || comments.isEmpty()) return 3.0; // Handle null or empty comments
 
         int positiveCount = 0;

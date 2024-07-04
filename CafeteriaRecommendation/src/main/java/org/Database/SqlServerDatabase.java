@@ -1,6 +1,9 @@
 package org.Database;
 
+import javax.swing.plaf.PanelUI;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -29,6 +32,16 @@ public class SqlServerDatabase implements AuthenticationDatabase, MenuManagement
     }
 
     @Override
+    public String getDiscardFoodItemIds() throws SQLException{
+        try {
+            return menuManagement.getDiscardFoodItemIds();
+        } catch (Exception e) {
+            System.err.println("Facing issues while getting the Discard Food item Ids");
+            return "Facing issues while getting the Discard Food item Ids";
+        }
+    }
+
+    @Override
     public void logLoginAttempt(int userId, boolean success) {
         try {
             userAuth.logLoginAttempt(userId, success);
@@ -37,6 +50,23 @@ public class SqlServerDatabase implements AuthenticationDatabase, MenuManagement
         }
     }
 
+    @Override
+    public List<String> getImprovementQuestionsandAnswers(){
+        try {
+            return menuManagement.getImprovementQuestionsandAnswers();
+        }  catch (Exception e) {
+            System.err.println("Error while getting the Improvement Questions and Answers " + e.getMessage());
+            return List.of();
+        }
+    }
+    @Override
+    public void insertImprovementAnswersinDB(BufferedReader in, PrintWriter out, String[] parts){
+        try {
+            menuManagement.insertImprovementAnswersinDB(in,out,parts);
+        }  catch (Exception e) {
+            System.err.println("Error while inserting the Improvement Questions and Answers " + e.getMessage());
+        }
+    }
     @Override
     public void logLogoutAttempt(int userId, boolean success) {
         try {
@@ -66,6 +96,25 @@ public class SqlServerDatabase implements AuthenticationDatabase, MenuManagement
         }
     }
 
+    @Override
+    public List<String> generateDiscardMenuItems() {
+        try {
+            return  menuManagement.generateDiscardMenuItems();
+        } catch (Exception e) {
+            System.err.println("Error While Generating Discarded Menu Items " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    @Override
+    public boolean updateStatusOfDiscardItem(){
+        try {
+            return  menuManagement.updateStatusOfDiscardItem();
+        } catch (Exception e) {
+            System.err.println("Error While Generating Discarded Menu Items " + e.getMessage());
+            return false;
+        }
+    }
     @Override
     public List<String> getMenuItems() {
         try {
@@ -162,6 +211,15 @@ public class SqlServerDatabase implements AuthenticationDatabase, MenuManagement
         } catch (Exception e) {
             System.err.println("Error rolling out finalized menu status: " + e.getMessage());
             return 0; // Indicate failure
+        }
+    }
+
+    @Override
+    public void addNotification(String message) {
+        try {
+            notificationManagement.addNotification(message);
+        }  catch (Exception e) {
+            System.err.println("Error retrieving finalized menu: " + e.getMessage());
         }
     }
 

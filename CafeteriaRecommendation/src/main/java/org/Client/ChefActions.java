@@ -1,6 +1,8 @@
 package org.Client;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -34,6 +36,18 @@ public class ChefActions {
                         viewFoodFeedbackHistory(in, out);
                         break;
                     case 8:
+                        viewDiscardMenuItems(in, out);
+                        break;
+                    case 9:
+                        sendImprovementQuestionsForDiscardFoodItems(in, out);
+                        break;
+                    case 10:
+                        viewImprovementQuestionandAnswers(in, out);
+                        break;
+                    case 11:
+                        AdminActions.deleteMenuItem(scanner, in, out);
+                        break;
+                    case 12:
                         Utility.logout(out);
                         return;
                     default:
@@ -45,6 +59,46 @@ public class ChefActions {
             scanner.nextLine(); // Clear the invalid input
         } catch (NullPointerException e) {
             System.err.println("Null value encountered: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    private static void viewImprovementQuestionandAnswers(BufferedReader in, PrintWriter out) {
+        try {
+            out.println("viewImprovementQuestionandAnswers");
+            String response;
+            while (!(response = in.readLine()).equals("END")) {
+                System.out.println(response);
+            }
+        } catch (IOException e) {
+            System.err.println("I/O error: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    private static void sendImprovementQuestionsForDiscardFoodItems(BufferedReader in, PrintWriter out) {
+        try {
+            out.println("sendImprovementQuestionsForDiscardFoodItems");
+            String response = in.readLine();
+            System.out.println(response);
+        } catch (IOException e) {
+            System.err.println("I/O error: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    private static void viewDiscardMenuItems(BufferedReader in, PrintWriter out) {
+        try {
+            out.println("viewDiscardMenuItems");
+            String response;
+            while (!(response = in.readLine()).equals("END")) {
+                System.out.println(response);
+            }
+        } catch (IOException e) {
+            System.err.println("I/O error: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
         }
@@ -107,11 +161,11 @@ public class ChefActions {
     private static void generateFinalizedMenu(Scanner scanner, BufferedReader in, PrintWriter out) {
         try {
             System.out.println("Enter the Menu Item Id for the Finalized Breakfast");
-            int breakfastMenuItemId = scanner.nextInt();
+            int breakfastMenuItemId = Utility.readIntInput(scanner);
             System.out.println("Enter the Menu Item Id for the Finalized Lunch");
-            int lunchMenuItemId = scanner.nextInt();
+            int lunchMenuItemId = Utility.readIntInput(scanner);
             System.out.println("Enter the Menu Item Id for the Finalized Dinner");
-            int dinnerMenuItemId = scanner.nextInt();
+            int dinnerMenuItemId = Utility.readIntInput(scanner);
             out.println("generateFinalizedMenu:" + breakfastMenuItemId + ":" + lunchMenuItemId + ":" + dinnerMenuItemId);
             String response;
             while (!(response = in.readLine()).equals("END")) {

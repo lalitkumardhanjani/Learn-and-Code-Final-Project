@@ -30,7 +30,11 @@ public class MenuDisplay {
         System.out.println("5. Generate Finalized Menu");
         System.out.println("6. Rollout Finalized Menu");
         System.out.println("7. View Food Feedback History By Employees");
-        System.out.println("8. Logout");
+        System.out.println("8. Generate Discard Menu Items");
+        System.out.println("9. Ask Improvement Questions to Employees");
+        System.out.println("10. View Improvement Questions and Answers");
+        System.out.println("11. Delete Food Item from the Menu");
+        System.out.println("12. Logout");
         System.out.print("Enter your choice: ");
     }
 
@@ -41,7 +45,8 @@ public class MenuDisplay {
         System.out.println("3. Give Feedback to any food item");
         System.out.println("4. View Finalized Menu");
         System.out.println("5. View Notifications");
-        System.out.println("6. Logout");
+        System.out.println("6. Improvement Food Items Questions");
+        System.out.println("7. Logout");
         System.out.print("Enter your choice: ");
     }
 }

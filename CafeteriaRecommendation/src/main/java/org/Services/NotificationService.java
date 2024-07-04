@@ -1,8 +1,12 @@
 package org.Services;
 
+import org.Database.DatabaseConnection;
 import org.Database.NotificationDatabase;
 
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 
 public class NotificationService {
@@ -30,6 +34,16 @@ public class NotificationService {
         } catch (Exception e) {
             out.println("Error retrieving notifications: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    public void addNotification(String message) {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO Notification (Message, DateTime) VALUES (?, GETDATE())")) {
+            stmt.setString(1, message);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error while inserting notification: " + e.getMessage());
         }
     }
 }

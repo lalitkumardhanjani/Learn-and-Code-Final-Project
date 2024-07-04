@@ -3,11 +3,13 @@ package org.Services;
 import org.Database.MenuManagementDatabase;
 import org.Database.FeedbackDatabase;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MenuService {
     private final MenuManagementDatabase menuDatabase;
@@ -124,7 +126,10 @@ public class MenuService {
             List<String> recommendedMenuItems = menuDatabase.generateRecommendedMenu();
             if (recommendedMenuItems.isEmpty()) {
                 out.println("No menu items available.");
-            } else {
+            } else if (Objects.equals(recommendedMenuItems.get(0), "Recommendation Menu already generated.")){
+                out.println("Recommendation Menu already generated.");
+            }
+            else {
                 out.println("----- Recommended Cafeteria Menu -----");
                 out.println(String.format("%-15s %-20s %-10s %-20s %-15s %-15s", "Id", "Item", "Price", "Meal Type", "Avg Rating", "Avg Comment"));
                 out.println("-----------------------------------------------------------------");
@@ -152,6 +157,47 @@ public class MenuService {
         }
     }
 
+
+    public void viewDiscardMenuItems(PrintWriter out) {
+        try {
+            List<String> recommendedMenu = menuDatabase.generateDiscardMenuItems();
+            if (recommendedMenu.isEmpty()) {
+                out.println("No menu items available.");
+            } else {
+                out.println("----- Discard Cafeteria Menu Items -----");
+                out.println(String.format("%-15s %-20s %-10s %-20s %-15s", "Id", "Name", "Price", "isAvailable", "MealType"));
+                out.println("-----------------------------------------------------------------");
+                for (String menuItem : recommendedMenu) {
+                    String[] parts = menuItem.split("\\^");
+                    if (parts.length >= 5) {
+                        out.println(String.format("%-15s %-20s %-10s %-20s %-15s",
+                                parts[0], parts[1], parts[2], parts[3], parts[4]));
+                    } else {
+                        out.println("Invalid format for menu item: " + menuItem);
+                    }
+                }
+                out.println("-----------------------------------------------------------------");
+            }
+            out.println("END");
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while viewing recommendation menu: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void sendImprovementQuestionsForDiscardFoodItems(PrintWriter out){
+        boolean isSendSuccess=menuDatabase.updateStatusOfDiscardItem();
+        if(isSendSuccess)
+            out.println("Successfully send the Improvement Questions to Employees");
+        else
+            out.println("There is some issue while sending the Improvement Questions");
+
+    }
+
+    public void getDiscardFoodItemIds(PrintWriter out) throws SQLException {
+        String discardFoodItemIds=menuDatabase.getDiscardFoodItemIds();
+        out.println(discardFoodItemIds);
+    }
     public void rolloutRecommendationMenu(PrintWriter out) {
         try {
             int isRollout = menuDatabase.rolloutRecommendation();
@@ -290,6 +336,42 @@ public class MenuService {
             out.println("END");
         } catch (RuntimeException e) {
             out.println("Unexpected error while printing menu: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
+    public void fillEmployeeImprovementAnswers(BufferedReader in, PrintWriter out, String[] parts) {
+        int foodItemId = Integer.parseInt(parts[1]);
+        int userId = Integer.parseInt(parts[2]);
+        String ans1= parts[3];
+        String ans2= parts[4];
+        String ans3= parts[5];
+        try {
+            menuDatabase.getImprovementQuestionsandAnswers();
+        } catch (RuntimeException e){
+            out.println("Unexpected error while inserting Improvement Questions and Answers: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void viewImprovementQuestionandAnswers(BufferedReader in, PrintWriter out) {
+        try {
+            List<String> improvementQuestionAnswers = menuDatabase.getImprovementQuestionsandAnswers();
+            if (improvementQuestionAnswers.isEmpty()) {
+                out.println("No menu items available.");
+            } else {
+                out.println("----- Improvement Questions and Answers -----");
+                out.println(String.format("%-50s %-50s %-50s %-50s %-50s", "FoodItemId", "UserId", "What didn't you like about Food?", "How would you like Food?", "Share your mom's recipe for Food?"));
+                out.println("-----------------------------------------------------------------");
+                for (String menuItem : improvementQuestionAnswers) {
+                    out.println(menuItem);
+                }
+                out.println("-----------------------------------------------------------------");
+            }
+            out.println("END");
+        } catch (RuntimeException e) {
+            out.println("Unexpected error while viewing Improvement Questions and Answers: " + e.getMessage());
             e.printStackTrace();
         }
     }

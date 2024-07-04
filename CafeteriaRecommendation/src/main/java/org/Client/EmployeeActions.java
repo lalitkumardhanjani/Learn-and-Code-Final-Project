@@ -1,6 +1,8 @@
 package org.Client;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -29,6 +31,9 @@ public class EmployeeActions {
                         viewNotifications(in, out);
                         break;
                     case 6:
+                        giveImprovementQuestionsAnswers(scanner, in, out, userId);
+                        break;
+                    case 7:
                         Utility.logout(out);
                         return;
                     default:
@@ -40,6 +45,30 @@ public class EmployeeActions {
             scanner.nextLine(); // Clear the invalid input
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    private static void giveImprovementQuestionsAnswers(Scanner scanner, BufferedReader in, PrintWriter out, int userId) throws IOException {
+        out.println("getDiscardFoodItemIds");
+        String response = in.readLine();
+        System.out.println(response);
+        String[] discardedItemIds = response.split(","); // Get IDs as an array
+
+        for (String foodItemId : discardedItemIds) {
+            scanner.nextLine();
+            System.out.println("Q1. What didn't you like about FoodId " + foodItemId + "?");
+            String answer1 = Utility.readStringInput(scanner);
+
+            System.out.println("Q2. How would you like FoodId " + foodItemId + " to taste?");
+            String answer2  = Utility.readStringInput(scanner);
+
+            System.out.println("Q3. Share your mom's recipe for FoodId " + foodItemId + "?");
+            String answer3  = Utility.readStringInput(scanner);
+
+            // Send improvement answers
+            out.println("improvementAnswers:" + foodItemId + ":" + userId + ":" + answer1 + ":" + answer2 + ":" + answer3);
+
+            System.out.println("Thank you for the giving the Feedback");
         }
     }
 
@@ -74,12 +103,12 @@ public class EmployeeActions {
     private static void giveFeedbackToAnyFoodItem(Scanner scanner, BufferedReader in, PrintWriter out, int userId) {
         try {
             System.out.println("Enter the Food Item Id for which you want to give the feedback:");
-            int foodItemId = scanner.nextInt();
+            int foodItemId = Utility.readIntInput(scanner);
             System.out.println("Enter the Rating (1-5) for the Food item:");
-            int foodItemRating = scanner.nextInt();
+            int foodItemRating = Utility.readIntInput(scanner);
             scanner.nextLine(); // Consume newline
             System.out.println("Enter the Feedback Comment for the food:");
-            String comment = scanner.nextLine();
+            String comment = Utility.readStringInput(scanner);
             out.println("giveFeedbackToAnyFoodItem:" + foodItemId + ":" + foodItemRating + ":" + comment + ":" + userId);
             String response = in.readLine();
             System.out.println(response);
@@ -96,11 +125,11 @@ public class EmployeeActions {
     private static void selectNextDayFoodItems(Scanner scanner, BufferedReader in, PrintWriter out, int userId) {
         try {
             System.out.println("Enter the Menu Item Id for the Breakfast:");
-            int breakfastMenuItemId = scanner.nextInt();
+            int breakfastMenuItemId = Utility.readIntInput(scanner);
             System.out.println("Enter the Menu Item Id for the Lunch:");
-            int lunchMenuItemId = scanner.nextInt();
+            int lunchMenuItemId = Utility.readIntInput(scanner);
             System.out.println("Enter the Menu Item Id for the Dinner:");
-            int dinnerMenuItemId = scanner.nextInt();
+            int dinnerMenuItemId = Utility.readIntInput(scanner);
             out.println("selectNextDayFoodItems:" + breakfastMenuItemId + ":" + lunchMenuItemId + ":" + dinnerMenuItemId + ":" + userId);
             String response = in.readLine();
             System.out.println(response);

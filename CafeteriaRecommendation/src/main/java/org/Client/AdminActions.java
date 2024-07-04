@@ -46,14 +46,14 @@ public class AdminActions {
         try {
             scanner.nextLine(); // consume newline
             System.out.println("Enter menu item name: ");
-            String name = scanner.nextLine();
+            String name = Utility.readStringInput(scanner);
             System.out.println("Enter menu item price: ");
-            double price = scanner.nextDouble();
+            double price = Utility.readDoubleInput(scanner);
             System.out.println("Enter menu item Type (1-Breakfast, 2-Lunch, 3-Dinner): ");
-            int mealType = scanner.nextInt();
-            scanner.nextLine();
+            int mealType = Utility.readIntInput(scanner);
+            scanner.nextLine(); // consume newline
             System.out.println("Enter item availability (1-Available, 0-Not Available): ");
-            int availability = scanner.nextInt();
+            int availability = Utility.readIntInput(scanner);
 
             out.println("createMenuItem:" + name + ":" + price + ":" + mealType + ":" + availability);
             String response = in.readLine();
@@ -85,18 +85,18 @@ public class AdminActions {
     private static void updateMenuItem(Scanner scanner, BufferedReader in, PrintWriter out) {
         try {
             System.out.println("Enter the Menu Item ID:");
-            int menuItemId = scanner.nextInt();
+            int menuItemId = Utility.readIntInput(scanner);
             scanner.nextLine(); // consume newline
 
             System.out.println("Enter Menu Item Name (Blank to skip):");
-            String menuItemName = scanner.nextLine();
+            String menuItemName = Utility.readStringInput(scanner);
 
             System.out.println("Enter Menu Item Price (Blank to skip):");
-            String priceInput = scanner.nextLine();
+            String priceInput = Utility.readStringInput(scanner);
             Double menuItemPrice = priceInput.isEmpty() ? null : Double.parseDouble(priceInput);
 
             System.out.println("Enter Menu Item Availability (1/0) (Blank to skip):");
-            String availabilityInput = scanner.nextLine();
+            String availabilityInput = Utility.readStringInput(scanner);
             Integer menuItemAvailability = availabilityInput.isEmpty() ? null : Integer.parseInt(availabilityInput);
 
             out.println("updateMenuItem:" + menuItemId + ":" + menuItemName + ":" + menuItemPrice + ":" + menuItemAvailability);
@@ -114,10 +114,10 @@ public class AdminActions {
         }
     }
 
-    private static void deleteMenuItem(Scanner scanner, BufferedReader in, PrintWriter out) {
+    public static void deleteMenuItem(Scanner scanner, BufferedReader in, PrintWriter out) {
         try {
             System.out.println("Enter menu item Id: ");
-            int menuId = scanner.nextInt();
+            int menuId = Utility.readIntInput(scanner);
 
             out.println("deleteMenuItem:" + menuId);
             String response = in.readLine();
