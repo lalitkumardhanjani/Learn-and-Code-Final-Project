@@ -8,7 +8,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-public class SqlServerDatabase implements AuthenticationDatabase, MenuManagementDatabase, FeedbackDatabase, NotificationDatabase {
+public class SqlServerDatabase implements IAuthenticationDatabase, IMenuManagementDatabase, IFeedbackDatabase, INotificationDatabase {
 
     private final UserAuthentication userAuth = new UserAuthentication();
     private final MenuManagement menuManagement = new MenuManagement();
@@ -20,11 +20,10 @@ public class SqlServerDatabase implements AuthenticationDatabase, MenuManagement
         return DatabaseConnection.getConnection();
     }
 
-    // AuthenticationDatabase methods
     @Override
-    public boolean checkCredentials(int userId, String password, int role) {
+    public boolean isValidUser(int userId, String password, int role) {
         try {
-            return userAuth.checkCredentials(userId, password, role);
+            return userAuth.isValidUser(userId, password, role);
         } catch (Exception e) {
             System.err.println("Error checking credentials for userId " + userId + ": " + e.getMessage());
             return false;
@@ -50,6 +49,14 @@ public class SqlServerDatabase implements AuthenticationDatabase, MenuManagement
         }
     }
 
+    @Override
+    public void makeEmployeeProfile(BufferedReader in, PrintWriter out, String[] parts){
+        try {
+            menuManagement.makeEmployeeProfile(in,out,parts);
+        }  catch (Exception e) {
+            System.err.println("Error while getting the Improvement Questions and Answers " + e.getMessage());
+        }
+    }
     @Override
     public List<String> getImprovementQuestionsandAnswers(){
         try {
@@ -165,9 +172,9 @@ public class SqlServerDatabase implements AuthenticationDatabase, MenuManagement
     }
 
     @Override
-    public List<String> getRecommendedMenu() throws SQLException {
+    public List<String> getRecommendedMenu(int userId) throws SQLException {
         try {
-            return menuManagement.getRecommendedMenu();
+            return menuManagement.getRecommendedMenu(userId);
         } catch (Exception e) {
             System.err.println("Error retrieving recommended menu: " + e.getMessage());
             throw e; // Re-throw exception to handle it at the caller level

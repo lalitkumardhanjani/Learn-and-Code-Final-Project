@@ -16,7 +16,7 @@ public class EmployeeActions {
 
                 switch (choice) {
                     case 1:
-                        viewRecommendationMenu(in, out);
+                        viewRecommendationMenu(in, out,userId);
                         break;
                     case 2:
                         selectNextDayFoodItems(scanner, in, out, userId);
@@ -34,6 +34,9 @@ public class EmployeeActions {
                         giveImprovementQuestionsAnswers(scanner, in, out, userId);
                         break;
                     case 7:
+                        makeEmployeeProfile(scanner,in,out,userId);
+                        break;
+                    case 8:
                         Utility.logout(out);
                         return;
                     default:
@@ -47,6 +50,27 @@ public class EmployeeActions {
             System.err.println("Unexpected error: " + e.getMessage());
         }
     }
+
+    private static void makeEmployeeProfile(Scanner scanner,BufferedReader in, PrintWriter out, int userId) throws IOException {
+        System.out.println("Creating Your Profile...");
+        System.out.println("Enter your Dietery Preference(Vegetarian,Non Vegetarian,Both)");
+        scanner.nextLine();
+        String dietary = Utility.readStringInput(scanner);
+        System.out.println("Enter your Spice Level(High,Medium,Low)");
+        String spiceLevel = Utility.readStringInput(scanner);
+        System.out.println("Enter you Cousine(North Indian,South Indian,Both)");
+        String cousine = Utility.readStringInput(scanner);
+        System.out.println("Enter your Sweeth Tooth(1 - Sweeth Tooth,0 - No Sweeth Tooth)");
+        Integer isSweethTooth = Utility.readIntInput(scanner);
+
+        System.out.println(dietary+spiceLevel+cousine+isSweethTooth+userId);
+
+        out.println("makeEmployeeProfile:" + dietary + ":" + spiceLevel + ":" + cousine + ":" + isSweethTooth + ":" + userId);
+        String response = in.readLine();
+        System.out.println(response);
+
+    }
+
 
     private static void giveImprovementQuestionsAnswers(Scanner scanner, BufferedReader in, PrintWriter out, int userId) throws IOException {
         out.println("getDiscardFoodItemIds");
@@ -143,9 +167,9 @@ public class EmployeeActions {
         }
     }
 
-    private static void viewRecommendationMenu(BufferedReader in, PrintWriter out) {
+    private static void viewRecommendationMenu(BufferedReader in, PrintWriter out,int userId) {
         try {
-            out.println("viewRecommendationMenu");
+            out.println("viewRecommendationMenu:"+userId);
             String response;
             while (!(response = in.readLine()).equals("END")) {
                 System.out.println(response);

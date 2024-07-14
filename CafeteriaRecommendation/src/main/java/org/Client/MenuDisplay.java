@@ -46,7 +46,10 @@ public class MenuDisplay {
         System.out.println("4. View Finalized Menu");
         System.out.println("5. View Notifications");
         System.out.println("6. Improvement Food Items Questions");
-        System.out.println("7. Logout");
+        System.out.println("7. Create profile for your taste");
+        System.out.println("8. Logout");
         System.out.print("Enter your choice: ");
     }
+
+
 }

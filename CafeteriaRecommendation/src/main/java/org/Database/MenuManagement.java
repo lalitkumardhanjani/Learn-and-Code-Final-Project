@@ -3,14 +3,14 @@ package org.Database;
 import org.Recommendation.ParseSentimentWords;
 import org.Recommendation.SentimentAnalyzer;
 
+import javax.persistence.Id;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.*;
 
-
-public class MenuManagement implements MenuManagementDatabase {
+public class MenuManagement implements IMenuManagementDatabase {
 
     @Override
     public void createMenuItem(String name, double price, Integer mealType, int availability) {
@@ -169,6 +169,31 @@ public class MenuManagement implements MenuManagementDatabase {
         }
     }
 
+    @Override
+    public void makeEmployeeProfile(BufferedReader in, PrintWriter out, String[] parts){
+        String dietary = parts[1];
+        String spiceLevel = parts[2];
+        String cousine = parts[3];
+        Integer isSweethTooth = Integer.parseInt(parts[4]);
+        Integer userId = Integer.parseInt(parts[5]);
+
+        System.out.println(dietary+":"+spiceLevel+":"+cousine+":"+isSweethTooth+":"+userId);
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "INSERT INTO UserPreference (UserId,DietaryPreference, SpiceLevel, Cuisine, HasSweetTooth) VALUES (?,?, ?, ?, ?)")) {
+            stmt.setInt(1, userId);
+            stmt.setString(2, dietary);
+            stmt.setString(3, spiceLevel);
+            stmt.setString(4, cousine);
+            stmt.setInt(5, isSweethTooth);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error while inserting employee profile item: " + e.getMessage());
+        }
+
+    }
+
     public List<String> generateRecommendedMenu() throws IOException {
         List<String> recommendedMenuItems = new ArrayList<>();
         Map<Integer, Double> foodSentimentRatings = new HashMap<>();
@@ -191,7 +216,7 @@ public class MenuManagement implements MenuManagementDatabase {
 
     private boolean hasExistingRecommendations(Connection conn) throws SQLException {
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS count FROM RecommendationMenu")) {
+             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS count FROM RecommendedMenu")) {
             rs.next();
             return rs.getInt("count") > 0;
         }
@@ -563,9 +588,9 @@ public class MenuManagement implements MenuManagementDatabase {
         }
     }
 
-    public List<String> getRecommendedMenu() {
+    public List<String> getRecommendedMenu(int userId) {
         List<String> menuItems = new ArrayList<>();
-        String query = "SELECT FoodItemId, Name, Price, MealType, [Avg Rating], [Avg Comments], Status FROM RecommendedMenu WHERE Status = 0";
+        String query = "SELECT rm.Id, rm.FoodItemId, rm.Name, rm.Price, rm.Mealtype, rm.Status, rm.[Avg Rating], rm.[Avg Comments] FROM [dbo].[RecommendedMenu] rm JOIN [dbo].[Menu] m ON rm.FoodItemId = m.Id JOIN [dbo].[UserPreference] up ON up.UserId = 3 WHERE rm.Status = 0 ORDER BY CASE WHEN m.MealId = 1 THEN 1 WHEN m.MealId = 2 THEN 2 WHEN m.MealId = 3 THEN 3 ELSE 4 END, CASE WHEN up.DietaryPreference = m.DietaryPreference THEN 1 ELSE 0 END DESC, CASE WHEN up.Cuisine = m.Cuisine THEN 1 ELSE 0 END DESC, CASE WHEN up.SpiceLevel = m.SpiceLevel THEN 1 ELSE 0 END DESC, CASE WHEN up.HasSweetTooth = m.HasSweetTooth THEN 1 ELSE 0 END DESC;";
 
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();

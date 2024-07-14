@@ -1,8 +1,6 @@
 package org.Services;
 
-import org.Database.DatabaseConnection;
-import org.Database.NotificationDatabase;
-
+import org.Database.*;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,40 +8,31 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class NotificationService {
-    private final NotificationDatabase database;
+    private final INotificationDatabase notificationDatabase;
 
-    public NotificationService(NotificationDatabase database) {
-        this.database = database;
+    public NotificationService(INotificationDatabase notificationDatabase) {
+        this.notificationDatabase = notificationDatabase;
     }
 
-    public void viewNotifications(PrintWriter out) {
+    public void viewNotifications(PrintWriter outputWriter) {
         try {
-            List<String> notifications = database.getNotifications();
-            if (notifications.isEmpty()) {
-                out.println("No notifications are present.");
+            List<String> notificationList = notificationDatabase.getNotifications();
+            if (notificationList.isEmpty()) {
+                outputWriter.println("No notifications are present.");
             } else {
-                out.println("-------------- Notifications -------------");
-                out.println("------------------------------------------");
+                outputWriter.println("-------------- Notifications -------------");
+                outputWriter.println("------------------------------------------");
 
-                for (String notification : notifications) {
-                    out.println(notification);
+                for (String notification : notificationList) {
+                    outputWriter.println(notification);
                 }
-                out.println("------------------------------------------");
+                outputWriter.println("------------------------------------------");
             }
-            out.println("END");
-        } catch (Exception e) {
-            out.println("Error retrieving notifications: " + e.getMessage());
-            e.printStackTrace();
+            outputWriter.println("END");
+        } catch (Exception exception) {
+            outputWriter.println("Error retrieving notifications: " + exception.getMessage());
+            exception.printStackTrace();
         }
     }
 
-    public void addNotification(String message) {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("INSERT INTO Notification (Message, DateTime) VALUES (?, GETDATE())")) {
-            stmt.setString(1, message);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            System.err.println("Error while inserting notification: " + e.getMessage());
-        }
-    }
 }

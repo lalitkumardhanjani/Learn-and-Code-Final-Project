@@ -3,77 +3,68 @@ package org.Recommendation;
 import java.util.*;
 
 public class SentimentAnalyzer {
-    private static Set<String> positiveWords;
-    private static Set<String> negativeWords;
-    private static Map<Integer, List<String>> foodItemComments; // Stores comments by food item ID
-    private final Map<Integer, Map<String, Integer>> foodItemCommentFrequencies; // Stores word frequencies for sentiment analysis
+    private static Set<String> positiveSentimentWords;
+    private static Set<String> negativeSentimentWords;
+    private static Map<Integer, List<String>> commentsByFoodItem;
+    private final Map<Integer, Map<String, Integer>> wordFrequenciesByFoodItem;
 
-    public SentimentAnalyzer(ParseSentimentWords parser) {
-        this.positiveWords = parser.getPositiveWords();
-        this.negativeWords = parser.getNegativeWords();
-        this.foodItemComments = new HashMap<>();
-        this.foodItemCommentFrequencies = new HashMap<>();
+    public SentimentAnalyzer(ParseSentimentWords sentimentWordsParser) {
+        positiveSentimentWords = sentimentWordsParser.getPositiveWords();
+        negativeSentimentWords = sentimentWordsParser.getNegativeWords();
+        commentsByFoodItem = new HashMap<>();
+        wordFrequenciesByFoodItem = new HashMap<>();
     }
 
     public void analyzeComments(int foodItemId, String comments) {
-        if (comments == null || comments.isEmpty()) return; // Handle empty or null comments
+        if (comments == null || comments.isEmpty()) return;
 
-        // Initialize map for new food item
-        foodItemCommentFrequencies.putIfAbsent(foodItemId, new HashMap<>());
+        wordFrequenciesByFoodItem.putIfAbsent(foodItemId, new HashMap<>());
 
-        // Split comments into words and analyze sentiment
         for (String word : comments.split("\\W+")) {
             String lowerCaseWord = word.toLowerCase();
-            if (positiveWords.contains(lowerCaseWord) || negativeWords.contains(lowerCaseWord)) {
-                Map<String, Integer> frequencies = foodItemCommentFrequencies.get(foodItemId);
+            if (positiveSentimentWords.contains(lowerCaseWord) || negativeSentimentWords.contains(lowerCaseWord)) {
+                Map<String, Integer> frequencies = wordFrequenciesByFoodItem.get(foodItemId);
                 frequencies.put(lowerCaseWord, frequencies.getOrDefault(lowerCaseWord, 0) + 1);
             }
         }
 
-        // Store the comment
-        foodItemComments.putIfAbsent(foodItemId, new ArrayList<>());
-        foodItemComments.get(foodItemId).add(comments);
+        commentsByFoodItem.putIfAbsent(foodItemId, new ArrayList<>());
+        commentsByFoodItem.get(foodItemId).add(comments);
     }
 
     public double calculateAverageRating(int foodItemId, List<Integer> ratings) {
-        if (ratings == null || ratings.isEmpty()) return 0.0; // Handle null or empty ratings
-        double sum = 0;
+        if (ratings == null || ratings.isEmpty()) return 0.0;
+        double sumOfRatings = 0;
         for (int rating : ratings) {
-            sum += rating;
+            sumOfRatings += rating;
         }
-        return sum / ratings.size();
+        return sumOfRatings / ratings.size();
     }
 
     public static String getTopComment(int foodItemId) {
-        List<String> comments = foodItemComments.getOrDefault(foodItemId, Collections.emptyList());
-
-        // Sort comments based on sentiment score (optional)
-        // comments.sort((c1, c2) -> Double.compare(calculateSentimentScore(c2), calculateSentimentScore(c1))); // Higher sentiment score first
-
-        // Return the first element (assuming comments are not empty)
+        List<String> comments = commentsByFoodItem.getOrDefault(foodItemId, Collections.emptyList());
         return comments.isEmpty() ? null : comments.get(0);
     }
 
-
     public static double calculateSentimentScore(String comments) {
-        if (comments == null || comments.isEmpty()) return 3.0; // Handle null or empty comments
+        if (comments == null || comments.isEmpty()) return 3.0;
 
-        int positiveCount = 0;
-        int negativeCount = 0;
+        int positiveWordCount = 0;
+        int negativeWordCount = 0;
 
         for (String word : comments.split("\\W+")) {
             String lowerCaseWord = word.toLowerCase();
-            if (positiveWords.contains(lowerCaseWord)) {
-                positiveCount++;
-            } else if (negativeWords.contains(lowerCaseWord)) {
-                negativeCount++;
+            if (positiveSentimentWords.contains(lowerCaseWord)) {
+                positiveWordCount++;
+            } else if (negativeSentimentWords.contains(lowerCaseWord)) {
+                negativeWordCount++;
             }
         }
 
-        int totalWords = positiveCount + negativeCount;
-        if (totalWords == 0) return 3.0; // Neutral score if no sentiment words
+        int totalSentimentWords = positiveWordCount + negativeWordCount;
+        if (totalSentimentWords == 0) return 3.0;
 
-        double sentimentScore = (5.0 * positiveCount - 5.0 * negativeCount) / totalWords;
-        return Math.max(1.0, Math.min(5.0, sentimentScore)); // Ensure score is within [1, 5]
+        double sentimentScore = (5.0 * positiveWordCount - 5.0 * negativeWordCount) / totalSentimentWords;
+        return Math.max(1.0, Math.min(5.0, sentimentScore));
     }
 }

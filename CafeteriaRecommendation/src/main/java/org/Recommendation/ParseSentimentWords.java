@@ -5,55 +5,54 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import org.Constant.Constant;
 
 public class ParseSentimentWords {
-    private static final String POSITIVE_WORDS_FILE_PATH = "src/main/java/org/Recommendation/HelpingRecommendWords/Positive.txt";
-    private static final String NEGATIVE_WORDS_FILE_PATH = "src/main/java/org/Recommendation/HelpingRecommendWords/Negative.txt";
 
-    private Set<String> positiveWords;
-    private Set<String> negativeWords;
+    private Set<String> positiveSentimentWords;
+    private Set<String> negativeSentimentWords;
 
     public ParseSentimentWords() {
         try {
-            this.positiveWords = loadWordsFromFile(POSITIVE_WORDS_FILE_PATH);
-            this.negativeWords = loadWordsFromFile(NEGATIVE_WORDS_FILE_PATH);
+            this.positiveSentimentWords = loadWordsFromFile(Constant.POSITIVE_WORDS_FILE_PATH);
+            this.negativeSentimentWords = loadWordsFromFile(Constant.NEGATIVE_WORDS_FILE_PATH);
         } catch (IOException e) {
             System.err.println("Error loading sentiment words: " + e.getMessage());
-            this.positiveWords = new HashSet<>();
-            this.negativeWords = new HashSet<>();
+            this.positiveSentimentWords = new HashSet<>();
+            this.negativeSentimentWords = new HashSet<>();
         }
     }
 
     private Set<String> loadWordsFromFile(String filePath) throws IOException {
-        Set<String> words = new HashSet<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+        Set<String> sentimentWords = new HashSet<>();
+        try (BufferedReader fileReader = new BufferedReader(new FileReader(filePath))) {
             String line;
-            while ((line = reader.readLine()) != null) {
-                addWordsToSet(line, words);
+            while ((line = fileReader.readLine()) != null) {
+                addWordsToSet(line, sentimentWords);
             }
         } catch (IOException e) {
             System.err.println("Failed to read file at " + filePath + ": " + e.getMessage());
             throw e;
         }
-        return words;
+        return sentimentWords;
     }
 
-    private void addWordsToSet(String line, Set<String> words) {
-        if (line == null || line.trim().isEmpty()) return; // Handle empty lines
+    private void addWordsToSet(String line, Set<String> sentimentWords) {
+        if (line == null || line.trim().isEmpty()) return;
 
         String[] csvWords = line.split(",");
         for (String word : csvWords) {
             if (!word.trim().isEmpty()) {
-                words.add(word.trim().toLowerCase());
+                sentimentWords.add(word.trim().toLowerCase());
             }
         }
     }
 
     public Set<String> getPositiveWords() {
-        return new HashSet<>(positiveWords); // Return a copy to avoid external modifications
+        return new HashSet<>(positiveSentimentWords);
     }
 
     public Set<String> getNegativeWords() {
-        return new HashSet<>(negativeWords); // Return a copy to avoid external modifications
+        return new HashSet<>(negativeSentimentWords);
     }
 }

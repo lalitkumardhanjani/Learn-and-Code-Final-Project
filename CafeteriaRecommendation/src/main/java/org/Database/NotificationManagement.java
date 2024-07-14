@@ -1,16 +1,19 @@
 package org.Database;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NotificationManagement {
 
     public static void addNotification(String message) {
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("INSERT INTO Notification (Message, DateTime) VALUES (?, GETDATE())")) {
-            stmt.setString(1, message);
-            stmt.executeUpdate();
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement("INSERT INTO Notification (Message, DateTime) VALUES (?, GETDATE())")) {
+            statement.setString(1, message);
+            statement.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Error while inserting notification: " + e.getMessage());
         }
@@ -20,14 +23,14 @@ public class NotificationManagement {
         List<String> notifications = new ArrayList<>();
         String query = "SELECT Message FROM Notification";
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
 
-            while (rs.next()) {
-                String message = rs.getString("Message");
-                String formattedItem = String.format("%-20s", message);
-                notifications.add(formattedItem);
+            while (resultSet.next()) {
+                String message = resultSet.getString("Message");
+                String formattedMessage = String.format("%-20s", message);
+                notifications.add(formattedMessage);
             }
         } catch (SQLException e) {
             System.err.println("Error retrieving notifications: " + e.getMessage());

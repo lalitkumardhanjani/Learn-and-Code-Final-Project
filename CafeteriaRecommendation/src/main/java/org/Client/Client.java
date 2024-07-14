@@ -4,16 +4,17 @@ import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
+import org.Constant.Constant;
+
 public class Client {
-    private static final int PORT = 1234;
-    private static final String SERVER_ADDRESS = "localhost";
+
 
     public static void main(String[] args) {
         new Client().start();
     }
 
     private void start() {
-        try (Socket socket = new Socket(SERVER_ADDRESS, PORT);
+        try (Socket socket = new Socket(Constant.SERVER_ADDRESS, Constant.CLIENT_PORT);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              Scanner scanner = new Scanner(System.in)) {
@@ -28,7 +29,7 @@ public class Client {
         } catch (ConnectException e) {
             System.err.println("Connection refused. Make sure the server is running.");
         } catch (UnknownHostException e) {
-            System.err.println("Unknown host: " + SERVER_ADDRESS);
+            System.err.println("Unknown host: " + Constant.SERVER_ADDRESS);
         } catch (IOException e) {
             System.err.println("I/O error: " + e.getMessage());
         } catch (Exception e) {

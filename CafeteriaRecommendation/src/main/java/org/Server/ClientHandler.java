@@ -8,58 +8,54 @@ import java.net.SocketException;
 import java.util.Map;
 
 public class ClientHandler implements Runnable {
-    private final Socket clientSocket;
-    private final Map<Socket, Integer> activeUsers;
-    private int userId = -1;
-    private AuthenticationHandler authenticationHandler;
-    private RequestHandler requestHandler;
+    private final Socket clientConnectionSocket;
+    private final Map<Socket, Integer> activeUserMap;
+    private AuthenticationHandler userAuthenticationHandler;
+    private RequestHandler clientRequestHandler;
 
-    public ClientHandler(Socket clientSocket, Map<Socket, Integer> activeUsers) {
-        this.clientSocket = clientSocket;
-        this.activeUsers = activeUsers;
+    public ClientHandler(Socket clientConnectionSocket, Map<Socket, Integer> activeUserMap) {
+        this.clientConnectionSocket = clientConnectionSocket;
+        this.activeUserMap = activeUserMap;
         initializeHandlers();
     }
 
     private void initializeHandlers() {
-        SqlServerDatabase sqlDatabase = new SqlServerDatabase();
-        authenticationHandler = new AuthenticationHandler(sqlDatabase, activeUsers);
-        requestHandler = new RequestHandler(sqlDatabase, activeUsers);
+        SqlServerDatabase sqlServerDatabase = new SqlServerDatabase();
+        userAuthenticationHandler = new AuthenticationHandler(sqlServerDatabase, activeUserMap);
+        clientRequestHandler = new RequestHandler(sqlServerDatabase);
     }
 
     @Override
     public void run() {
         try {
             handleClient();
-        } catch (Exception e) {
-            System.err.println("Unexpected error occurred: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception unexpectedException) {
+            System.err.println("Unexpected error occurred: " + unexpectedException.getMessage());
         }
     }
 
     private void handleClient() {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+        try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(clientConnectionSocket.getInputStream()));
+             PrintWriter outputWriter = new PrintWriter(clientConnectionSocket.getOutputStream(), true)) {
 
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
+            String clientInputLine;
+            while ((clientInputLine = inputReader.readLine()) != null) {
                 try {
-                    if (inputLine.equals("logout")) {
-                        authenticationHandler.handleLogout(out, clientSocket);
-                    } else if (inputLine.startsWith("login:")) {
-                        authenticationHandler.handleLogin(out, inputLine.split(":"), clientSocket);
+                    if (clientInputLine.equals("logout")) {
+                        userAuthenticationHandler.handleLogout(outputWriter, clientConnectionSocket);
+                    } else if (clientInputLine.startsWith("login:")) {
+                        userAuthenticationHandler.handleLogin(outputWriter, clientInputLine.split(":"), clientConnectionSocket);
                     } else {
-                        requestHandler.handleRequest(inputLine, in, out, clientSocket);
+                        clientRequestHandler.handleRequest(clientInputLine, inputReader, outputWriter);
                     }
-                } catch (Exception e) {
-                    out.println("Error processing request: " + e.getMessage());
-                    e.printStackTrace();
+                } catch (Exception requestProcessingException) {
+                    outputWriter.println("Error processing request: " + requestProcessingException.getMessage());
                 }
             }
-        } catch (SocketException e) {
-            System.err.println("Client disconnected unexpectedly: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("I/O error occurred while handling client: " + e.getMessage());
-            e.printStackTrace();
+        } catch (SocketException clientSocketException) {
+            System.err.println("Client disconnected unexpectedly: " + clientSocketException.getMessage());
+        } catch (IOException clientHandlingIOException) {
+            System.err.println("I/O error occurred while handling client: " + clientHandlingIOException.getMessage());
         } finally {
             closeClientSocket();
         }
@@ -67,11 +63,10 @@ public class ClientHandler implements Runnable {
 
     private void closeClientSocket() {
         try {
-            clientSocket.close();
-        } catch (IOException e) {
-            System.err.println("Error closing client socket: " + e.getMessage());
-            e.printStackTrace();
+            clientConnectionSocket.close();
+        } catch (IOException clientSocketClosingIOException) {
+            System.err.println("Error closing client socket: " + clientSocketClosingIOException.getMessage());
         }
-        System.out.println("Client disconnected from port " + clientSocket.getPort());
+        System.out.println("Client disconnected from port " + clientConnectionSocket.getPort());
     }
 }

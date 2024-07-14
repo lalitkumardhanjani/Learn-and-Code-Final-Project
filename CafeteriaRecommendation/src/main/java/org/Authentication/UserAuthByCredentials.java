@@ -1,14 +1,14 @@
 package org.Authentication;
 
-import org.Database.AuthenticationDatabase;
+import org.Database.IAuthenticationDatabase;
 
-public class UserAuthByCredentials implements AuthenticationService {
+public class UserAuthByCredentials implements IAuthentication {
     private final int userId;
     private final String password;
     private final int role;
-    private final AuthenticationDatabase database;
+    private final IAuthenticationDatabase database;
 
-    public UserAuthByCredentials(int userId, String password, int role, AuthenticationDatabase database) {
+    public UserAuthByCredentials(int userId, String password, int role, IAuthenticationDatabase database) {
         if (userId <= 0 || password == null || password.isEmpty() || role < 0) {
             throw new IllegalArgumentException("Invalid user credentials or role");
         }
@@ -21,10 +21,8 @@ public class UserAuthByCredentials implements AuthenticationService {
     @Override
     public boolean login() {
         try {
-            return database.checkCredentials(userId, password, role);
+            return database.isValidUser(userId, password, role);
         } catch (Exception e) {
-            // Log the exception (you might use a logger here)
-            e.printStackTrace();
             return false;
         }
     }

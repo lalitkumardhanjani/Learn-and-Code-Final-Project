@@ -1,55 +1,56 @@
 package org.Server;
 
-import org.Authentication.AuthenticationService;
+import org.Authentication.IAuthentication;
 import org.Authentication.UserAuthByCredentials;
-import org.Database.AuthenticationDatabase;
+import org.Database.IAuthenticationDatabase;
 
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Map;
 
 public class AuthenticationHandler {
-    private final AuthenticationDatabase authDatabase;
-    private final Map<Socket, Integer> activeUsers;
+    private final IAuthenticationDatabase authenticationDatabase;
+    private final Map<Socket, Integer> activeUserMap;
 
-    public AuthenticationHandler(AuthenticationDatabase authDatabase, Map<Socket, Integer> activeUsers) {
-        this.authDatabase = authDatabase;
-        this.activeUsers = activeUsers;
+    public AuthenticationHandler(IAuthenticationDatabase authenticationDatabase, Map<Socket, Integer> activeUserMap) {
+        this.authenticationDatabase = authenticationDatabase;
+        this.activeUserMap = activeUserMap;
     }
 
-    public void handleLogin(PrintWriter out, String[] parts, Socket clientSocket) {
+    public void handleLogin(PrintWriter outputWriter, String[] loginData, Socket clientConnectionSocket) {
         try {
-            int role = Integer.parseInt(parts[1]);
-            int userId = Integer.parseInt(parts[2]);
-            String password = parts[3];
+            int userRole = Integer.parseInt(loginData[1]);
+            int userId = Integer.parseInt(loginData[2]);
+            String userPassword = loginData[3];
 
-            AuthenticationService auth = new UserAuthByCredentials(userId, password, role, authDatabase);
-            if (auth.login()) {
-                out.println("Login successful: " + getRoleName(role));
-                activeUsers.put(clientSocket, userId);
+            IAuthentication authenticationService = new UserAuthByCredentials(userId, userPassword, userRole, authenticationDatabase);
+            if (authenticationService.login()) {
+                outputWriter.println("Login successful: " + getRoleName(userRole));
+                activeUserMap.put(clientConnectionSocket, userId);
             } else {
-                out.println("Invalid credentials");
+                outputWriter.println("Invalid credentials");
             }
-        } catch (Exception e) {
-            out.println("Error during login: " + e.getMessage());
-            e.printStackTrace();
+        } catch (NumberFormatException numberFormatException) {
+            outputWriter.println("Error during login: Invalid number format. " + numberFormatException.getMessage());
+        } catch (Exception loginException) {
+            outputWriter.println("Error during login: " + loginException.getMessage());
         }
     }
 
-    public void handleLogout(PrintWriter out, Socket clientSocket) {
-        Integer userId = activeUsers.remove(clientSocket);
+    public void handleLogout(PrintWriter outputWriter, Socket clientConnectionSocket) {
+        Integer userId = activeUserMap.remove(clientConnectionSocket);
         if (userId == null) {
-            out.println("Not logged in");
+            outputWriter.println("Not logged in");
         } else {
-            authDatabase.logLogoutAttempt(userId, true);
-            out.println("Logout successful");
+            authenticationDatabase.logLogoutAttempt(userId, true);
+            outputWriter.println("Logout successful");
         }
     }
 
     private String getRoleName(int role) {
         switch (role) {
-            case 1: return "admin";
-            case 2: return "chef";
+            case 1: return "Admin";
+            case 2: return "Chef";
             case 3: return "Employee";
             default: throw new IllegalArgumentException("Unknown role: " + role);
         }

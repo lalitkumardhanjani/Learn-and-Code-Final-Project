@@ -1,8 +1,8 @@
 package org.Server;
 
-import org.Database.MenuManagementDatabase;
-import org.Database.FeedbackDatabase;
-import org.Database.NotificationDatabase;
+import org.Database.IMenuManagementDatabase;
+import org.Database.IFeedbackDatabase;
+import org.Database.INotificationDatabase;
 import org.Database.SqlServerDatabase;
 import org.Services.FeedbackService;
 import org.Services.MenuService;
@@ -11,98 +11,94 @@ import org.Services.NotificationService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.Socket;
-import java.sql.SQLException;
-import java.util.Map;
-
 public class RequestHandler {
-    private final MenuManagementDatabase menuDatabase;
-    private final FeedbackDatabase feedbackDatabase;
-    private final NotificationDatabase notificationDatabase;
-    private final Map<Socket, Integer> activeUsers;
+    private final IMenuManagementDatabase menuManagementDatabase;
+    private final IFeedbackDatabase feedbackDatabase;
+    private final INotificationDatabase notificationDatabase;
 
-    public RequestHandler(SqlServerDatabase sqlDatabase, Map<Socket, Integer> activeUsers) {
-        this.menuDatabase = sqlDatabase;
-        this.feedbackDatabase = sqlDatabase;
-        this.notificationDatabase = sqlDatabase;
-        this.activeUsers = activeUsers;
+    public RequestHandler(SqlServerDatabase sqlServerDatabase) {
+        this.menuManagementDatabase = sqlServerDatabase;
+        this.feedbackDatabase = sqlServerDatabase;
+        this.notificationDatabase = sqlServerDatabase;
     }
 
-    public void handleRequest(String inputLine, BufferedReader in, PrintWriter out, Socket clientSocket) throws SQLException, IOException {
+    public void handleRequest(String inputLine, BufferedReader inputReader, PrintWriter outputWriter) throws IOException {
         try {
-            String[] parts = inputLine.split(":");
-            MenuService menuService = new MenuService(menuDatabase, feedbackDatabase);
+            String[] requestParts = inputLine.split(":");
+            MenuService menuService = new MenuService(menuManagementDatabase, feedbackDatabase);
             FeedbackService feedbackService = new FeedbackService(feedbackDatabase);
             NotificationService notificationService = new NotificationService(notificationDatabase);
-            Integer activeUserId = activeUsers.get(clientSocket);
 
-            switch (parts[0]) {
+            switch (requestParts[0]) {
                 case "createMenuItem":
-                    menuService.handleMenuCreation(out, parts, activeUserId);
+                    menuService.processMenuCreation(outputWriter, requestParts);
                     break;
                 case "updateMenuItem":
-                    menuService.handleUpdateMenuItem(out, parts, activeUserId);
+                    menuService.processMenuItemUpdate(outputWriter, requestParts);
                     break;
                 case "deleteMenuItem":
-                    menuService.handleDeleteMenuItem(out, parts, activeUserId);
+                    menuService.processMenuItemDeletion(outputWriter, requestParts);
                     break;
                 case "viewMenu":
-                    menuService.handleViewMenu(out, activeUserId);
+                    menuService.viewMenu(outputWriter);
                     break;
                 case "generateRecommendationMenu":
-                    menuService.generateRecommendation(out, activeUserId);
+                    menuService.generateRecommendationMenu(outputWriter);
                     break;
                 case "rolloutRecommendationMenu":
-                    menuService.rolloutRecommendationMenu(out);
+                    menuService.rolloutRecommendationMenu(outputWriter);
                     break;
                 case "generateFinalizedMenu":
-                    menuService.generateFinalizedMenu(out, parts);
+                    menuService.generateFinalizedMenu(outputWriter, requestParts);
                     break;
                 case "rolloutFinalizedMenu":
-                    menuService.rolloutFinalizedMenu(out);
+                    menuService.rolloutFinalizedMenu(outputWriter);
                     break;
                 case "viewRecommendationMenu":
-                    menuService.viewRecommendationMenu(out);
+                    menuService.viewRecommendationMenu(outputWriter, requestParts);
                     break;
                 case "selectNextDayFoodItems":
-                    menuService.selectNextDayFoodItems(out, parts);
+                    menuService.selectNextDayFoodItems(outputWriter, requestParts);
                     break;
                 case "viewSelectedFoodItemsEmployees":
-                    menuService.viewSelectedFoodItemsEmployees(out);
+                    menuService.viewSelectedFoodItemsEmployees(outputWriter);
                     break;
                 case "giveFeedbackToAnyFoodItem":
-                    feedbackService.submitFoodFeedback(in, out, parts);
+                    feedbackService.submitFoodFeedback(outputWriter, requestParts);
                     break;
                 case "viewFoodFeedbackHistory":
-                    feedbackService.displayFoodFeedbackHistory(out);
+                    feedbackService.viewFoodFeedbackHistory(outputWriter);
                     break;
                 case "viewFinalizedMenu":
-                    menuService.viewFinalizedMenu(out);
+                    menuService.viewFinalizedMenu(outputWriter);
                     break;
                 case "viewNotifications":
-                    notificationService.viewNotifications(out);
+                    notificationService.viewNotifications(outputWriter);
                     break;
                 case "viewDiscardMenuItems":
-                    menuService.viewDiscardMenuItems(out);
+                    menuService.viewDiscardMenuItems(outputWriter);
                     break;
                 case "sendImprovementQuestionsForDiscardFoodItems":
-                    menuService.sendImprovementQuestionsForDiscardFoodItems(out);
+                    menuService.sendImprovementQuestionsForDiscardFoodItems(outputWriter);
                     break;
                 case "getDiscardFoodItemIds":
-                    menuService.getDiscardFoodItemIds(out);
+                    menuService.getDiscardFoodItemIds(outputWriter);
                     break;
                 case "improvementAnswers":
-                    menuService.fillEmployeeImprovementAnswers(in,out,parts);
+                    menuService.fillEmployeeImprovementAnswers(inputReader, outputWriter, requestParts);
                     break;
                 case "viewImprovementQuestionandAnswers":
-                    menuService.viewImprovementQuestionandAnswers(in,out);
+                    menuService.viewImprovementQuestionAndAnswers(inputReader, outputWriter);
+                    break;
+                case "makeEmployeeProfile":
+                    menuService.makeEmployeeProfile(inputReader, outputWriter, requestParts);
+                    break;
                 default:
-                    out.println("Invalid input.");
+                    outputWriter.println("Invalid input.");
                     break;
             }
-        } catch (Exception e) {
-            out.println("Error processing request: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception exception) {
+            outputWriter.println("Error processing request: " + exception.getMessage());
         }
     }
 }
