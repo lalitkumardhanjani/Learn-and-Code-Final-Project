@@ -95,11 +95,11 @@ public class SqlServerDatabase implements IAuthenticationDatabase, IMenuManageme
 
     // MenuManagementDatabase methods
     @Override
-    public void createMenuItem(String name, double price, Integer mealType, int availability) {
+    public void createMenuItem(String [] menuItemData) {
         try {
-            menuManagement.createMenuItem(name, price, mealType, availability);
+            menuManagement.createMenuItem(menuItemData);
         } catch (Exception e) {
-            System.err.println("Error creating menu item: " + name + ": " + e.getMessage());
+            System.err.println("Error creating menu item: " + menuItemData[2] + ": " + e.getMessage());
         }
     }
 

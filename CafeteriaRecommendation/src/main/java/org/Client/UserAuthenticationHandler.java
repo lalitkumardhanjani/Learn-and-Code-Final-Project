@@ -1,5 +1,7 @@
 package org.Client;
 
+import org.Constant.Constant;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,12 +32,12 @@ public class UserAuthenticationHandler {
 
                 System.out.println("Enter userId: ");
                 int userId = Utility.readIntInput(scanner);
-                scanner.nextLine(); // Consume newline left-over
+                scanner.nextLine();
                 System.out.println("Enter password: ");
                 String password = scanner.nextLine();
 
                 System.out.println("Sending login request...");
-                out.println("login:" + roleChoice + ":" + userId + ":" + (password.isEmpty() ? "" : password));
+                out.println(Constant.auth+":"+"login:" + roleChoice + ":" + userId + ":" + (password.isEmpty() ? "" : password));
 
                 String response = in.readLine();
                 System.out.println(response);

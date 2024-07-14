@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface IMenuManagementDatabase {
-    void createMenuItem(String name, double price, Integer mealType, int availability);
+    void createMenuItem(String [] menuItemData);
     List<String> getMenuItems();
     void updateMenuItem(int menuId, String newName, double newPrice, int newAvailability);
     boolean isValidMenuId(int menuId);

@@ -13,4 +13,10 @@ public class Constant {
     public static final String POSITIVE_WORDS_FILE_PATH = "src/main/java/org/Recommendation/HelpingRecommendWords/Positive.txt";
     public static final String NEGATIVE_WORDS_FILE_PATH = "src/main/java/org/Recommendation/HelpingRecommendWords/Negative.txt";
 
+    public static final String adminRole = "admin";
+    public static final String chefRole = "chef";
+    public static final String employeeRole = "employee";
+
+    public static final String auth = "auth";
+
 }

@@ -1,5 +1,7 @@
 package org.Client;
 
+import org.Constant.Constant;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -65,7 +67,7 @@ public class EmployeeActions {
 
         System.out.println(dietary+spiceLevel+cousine+isSweethTooth+userId);
 
-        out.println("makeEmployeeProfile:" + dietary + ":" + spiceLevel + ":" + cousine + ":" + isSweethTooth + ":" + userId);
+        out.println(Constant.employeeRole+":"+"makeEmployeeProfile:" + dietary + ":" + spiceLevel + ":" + cousine + ":" + isSweethTooth + ":" + userId);
         String response = in.readLine();
         System.out.println(response);
 
@@ -73,10 +75,10 @@ public class EmployeeActions {
 
 
     private static void giveImprovementQuestionsAnswers(Scanner scanner, BufferedReader in, PrintWriter out, int userId) throws IOException {
-        out.println("getDiscardFoodItemIds");
+        out.println(Constant.employeeRole+":"+"getDiscardFoodItemIds");
         String response = in.readLine();
         System.out.println(response);
-        String[] discardedItemIds = response.split(","); // Get IDs as an array
+        String[] discardedItemIds = response.split(",");
 
         for (String foodItemId : discardedItemIds) {
             scanner.nextLine();
@@ -98,7 +100,7 @@ public class EmployeeActions {
 
     private static void viewNotifications(BufferedReader in, PrintWriter out) {
         try {
-            out.println("viewNotifications");
+            out.println(Constant.employeeRole+":"+"viewNotifications");
             String response;
             while (!(response = in.readLine()).equals("END")) {
                 System.out.println(response);
@@ -112,7 +114,7 @@ public class EmployeeActions {
 
     private static void viewFinalizedMenu(BufferedReader in, PrintWriter out) {
         try {
-            out.println("viewFinalizedMenu");
+            out.println(Constant.employeeRole+":"+"viewFinalizedMenu");
             String response;
             while (!(response = in.readLine()).equals("END")) {
                 System.out.println(response);
@@ -133,7 +135,7 @@ public class EmployeeActions {
             scanner.nextLine(); // Consume newline
             System.out.println("Enter the Feedback Comment for the food:");
             String comment = Utility.readStringInput(scanner);
-            out.println("giveFeedbackToAnyFoodItem:" + foodItemId + ":" + foodItemRating + ":" + comment + ":" + userId);
+            out.println(Constant.employeeRole+":"+"giveFeedbackToAnyFoodItem:" + foodItemId + ":" + foodItemRating + ":" + comment + ":" + userId);
             String response = in.readLine();
             System.out.println(response);
         } catch (InputMismatchException e) {
@@ -154,7 +156,7 @@ public class EmployeeActions {
             int lunchMenuItemId = Utility.readIntInput(scanner);
             System.out.println("Enter the Menu Item Id for the Dinner:");
             int dinnerMenuItemId = Utility.readIntInput(scanner);
-            out.println("selectNextDayFoodItems:" + breakfastMenuItemId + ":" + lunchMenuItemId + ":" + dinnerMenuItemId + ":" + userId);
+            out.println(Constant.employeeRole+":"+"selectNextDayFoodItems:" + breakfastMenuItemId + ":" + lunchMenuItemId + ":" + dinnerMenuItemId + ":" + userId);
             String response = in.readLine();
             System.out.println(response);
         } catch (InputMismatchException e) {
@@ -169,7 +171,7 @@ public class EmployeeActions {
 
     private static void viewRecommendationMenu(BufferedReader in, PrintWriter out,int userId) {
         try {
-            out.println("viewRecommendationMenu:"+userId);
+            out.println(Constant.employeeRole+":"+"viewRecommendationMenu:"+userId);
             String response;
             while (!(response = in.readLine()).equals("END")) {
                 System.out.println(response);

@@ -25,7 +25,7 @@ public class Server {
                     Socket clientSocket = serverSocket.accept();
                     System.out.printf(Constant.CLIENT_CONNECT_MESSAGE + "%n", clientSocket.getPort());
 
-                    Thread clientThread = new Thread(new ClientHandler(clientSocket, activeUsers));
+                    Thread clientThread = new Thread(new ClientHandler(clientSocket));
                     clientThread.start();
                 } catch (IOException ioException) {
                     System.err.println("I/O error occurred while accepting client connection: " + ioException.getMessage());

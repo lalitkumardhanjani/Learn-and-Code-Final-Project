@@ -1,5 +1,7 @@
 package org.Client;
 
+import org.Constant.Constant;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -66,7 +68,7 @@ public class ChefActions {
 
     private static void viewImprovementQuestionandAnswers(BufferedReader in, PrintWriter out) {
         try {
-            out.println("viewImprovementQuestionandAnswers");
+            out.println(Constant.chefRole+":"+"viewImprovementQuestionandAnswers");
             String response;
             while (!(response = in.readLine()).equals("END")) {
                 System.out.println(response);
@@ -80,7 +82,7 @@ public class ChefActions {
 
     private static void sendImprovementQuestionsForDiscardFoodItems(BufferedReader in, PrintWriter out) {
         try {
-            out.println("sendImprovementQuestionsForDiscardFoodItems");
+            out.println(Constant.chefRole+":"+"sendImprovementQuestionsForDiscardFoodItems");
             String response = in.readLine();
             System.out.println(response);
         } catch (IOException e) {
@@ -92,7 +94,7 @@ public class ChefActions {
 
     private static void viewDiscardMenuItems(BufferedReader in, PrintWriter out) {
         try {
-            out.println("viewDiscardMenuItems");
+            out.println(Constant.chefRole+":"+"viewDiscardMenuItems");
             String response;
             while (!(response = in.readLine()).equals("END")) {
                 System.out.println(response);
@@ -106,7 +108,7 @@ public class ChefActions {
 
     private static void viewMenu(BufferedReader in, PrintWriter out) {
         try {
-            out.println("viewMenu");
+            out.println(Constant.chefRole+":"+"viewMenu");
             String response;
             while (!(response = in.readLine()).equals("END")) {
                 System.out.println(response);
@@ -120,7 +122,7 @@ public class ChefActions {
 
     private static void generateRecommendationMenu(BufferedReader in, PrintWriter out) {
         try {
-            out.println("generateRecommendationMenu");
+            out.println(Constant.chefRole+":"+"generateRecommendationMenu");
             String response;
             while (!(response = in.readLine()).equals("END")) {
                 System.out.println(response);
@@ -134,7 +136,7 @@ public class ChefActions {
 
     private static void rolloutRecommendationMenu(BufferedReader in, PrintWriter out) {
         try {
-            out.println("rolloutRecommendationMenu");
+            out.println(Constant.chefRole+":"+"rolloutRecommendationMenu");
             String response = in.readLine();
             System.out.println(response);
         } catch (IOException e) {
@@ -146,7 +148,7 @@ public class ChefActions {
 
     private static void viewSelectedFoodItemsEmployees(BufferedReader in, PrintWriter out) {
         try {
-            out.println("viewSelectedFoodItemsEmployees");
+            out.println(Constant.chefRole+":"+"viewSelectedFoodItemsEmployees");
             String response;
             while (!(response = in.readLine()).equals("END")) {
                 System.out.println(response);
@@ -166,7 +168,7 @@ public class ChefActions {
             int lunchMenuItemId = Utility.readIntInput(scanner);
             System.out.println("Enter the Menu Item Id for the Finalized Dinner");
             int dinnerMenuItemId = Utility.readIntInput(scanner);
-            out.println("generateFinalizedMenu:" + breakfastMenuItemId + ":" + lunchMenuItemId + ":" + dinnerMenuItemId);
+            out.println(Constant.chefRole+":"+"generateFinalizedMenu:" + breakfastMenuItemId + ":" + lunchMenuItemId + ":" + dinnerMenuItemId);
             String response;
             while (!(response = in.readLine()).equals("END")) {
                 System.out.println(response);
@@ -183,7 +185,7 @@ public class ChefActions {
 
     private static void rolloutFinalizedMenu(BufferedReader in, PrintWriter out) {
         try {
-            out.println("rolloutFinalizedMenu");
+            out.println(Constant.chefRole+":"+"rolloutFinalizedMenu");
             String response = in.readLine();
             System.out.println(response);
         } catch (IOException e) {
@@ -195,7 +197,7 @@ public class ChefActions {
 
     private static void viewFoodFeedbackHistory(BufferedReader in, PrintWriter out) {
         try {
-            out.println("viewFoodFeedbackHistory");
+            out.println(Constant.chefRole+":"+"viewFoodFeedbackHistory");
             String response;
             while (!(response = in.readLine()).equals("END")) {
                 System.out.println(response);

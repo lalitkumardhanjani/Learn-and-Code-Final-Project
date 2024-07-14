@@ -9,20 +9,22 @@ import java.util.Map;
 
 public class ClientHandler implements Runnable {
     private final Socket clientConnectionSocket;
-    private final Map<Socket, Integer> activeUserMap;
     private AuthenticationHandler userAuthenticationHandler;
-    private RequestHandler clientRequestHandler;
+    private AdminRequestHandler adminRequestHandler;
+    private ChefRequestHandler chefRequestHandler;
+    private EmployeeRequestHandler employeeRequestHandler;
 
-    public ClientHandler(Socket clientConnectionSocket, Map<Socket, Integer> activeUserMap) {
+    public ClientHandler(Socket clientConnectionSocket) {
         this.clientConnectionSocket = clientConnectionSocket;
-        this.activeUserMap = activeUserMap;
         initializeHandlers();
     }
 
     private void initializeHandlers() {
         SqlServerDatabase sqlServerDatabase = new SqlServerDatabase();
-        userAuthenticationHandler = new AuthenticationHandler(sqlServerDatabase, activeUserMap);
-        clientRequestHandler = new RequestHandler(sqlServerDatabase);
+        userAuthenticationHandler = new AuthenticationHandler(sqlServerDatabase);
+        adminRequestHandler = new AdminRequestHandler();
+        chefRequestHandler = new ChefRequestHandler();
+        employeeRequestHandler = new EmployeeRequestHandler();
     }
 
     @Override
@@ -41,12 +43,14 @@ public class ClientHandler implements Runnable {
             String clientInputLine;
             while ((clientInputLine = inputReader.readLine()) != null) {
                 try {
-                    if (clientInputLine.equals("logout")) {
-                        userAuthenticationHandler.handleLogout(outputWriter, clientConnectionSocket);
-                    } else if (clientInputLine.startsWith("login:")) {
+                    if (clientInputLine.startsWith("auth")) {
                         userAuthenticationHandler.handleLogin(outputWriter, clientInputLine.split(":"), clientConnectionSocket);
-                    } else {
-                        clientRequestHandler.handleRequest(clientInputLine, inputReader, outputWriter);
+                    } else if(clientInputLine.startsWith("admin")){
+                        adminRequestHandler.handleRequest(clientInputLine, inputReader, outputWriter);
+                    } else if(clientInputLine.startsWith("chef")) {
+                        chefRequestHandler.handleRequest(clientInputLine, inputReader, outputWriter);
+                    } else if(clientInputLine.startsWith("employee")) {
+                        employeeRequestHandler.handleRequest(clientInputLine, inputReader, outputWriter);
                     }
                 } catch (Exception requestProcessingException) {
                     outputWriter.println("Error processing request: " + requestProcessingException.getMessage());

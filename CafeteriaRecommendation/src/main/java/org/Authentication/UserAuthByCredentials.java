@@ -23,7 +23,18 @@ public class UserAuthByCredentials implements IAuthentication {
         try {
             return database.isValidUser(userId, password, role);
         } catch (Exception e) {
-            return false;
+            System.err.println("Unexpected error: " + e.getMessage());
         }
+        return false;
+    }
+
+    @Override
+    public String getUserRole(int userId){
+        try {
+            return database.getUserRole(userId);
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
+        }
+        return "Not a valid user";
     }
 }

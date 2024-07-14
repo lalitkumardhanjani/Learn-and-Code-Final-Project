@@ -13,14 +13,26 @@ import java.util.*;
 public class MenuManagement implements IMenuManagementDatabase {
 
     @Override
-    public void createMenuItem(String name, double price, Integer mealType, int availability) {
+    public void createMenuItem(String[] menuItemData) {
+        String itemName = menuItemData[2];
+        double itemPrice = Double.parseDouble(menuItemData[3]);
+        int mealTypeId = Integer.parseInt(menuItemData[4]);
+        int itemAvailability = Integer.parseInt(menuItemData[5]);
+        String dietary = menuItemData[6];
+        String spiceLevel = menuItemData[7];
+        String cuisine = menuItemData[8];
+        int isSweetTooth = Integer.parseInt(menuItemData[9]);
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT INTO Menu (name, price, mealId, isavailable) VALUES (?, ?, ?, ?)")) {
-            stmt.setString(1, name);
-            stmt.setDouble(2, price);
-            stmt.setInt(3, mealType);
-            stmt.setInt(4, availability);
+                     "INSERT INTO Menu (name, price, mealId, isavailable,DietaryPreference,SpiceLevel,Cuisine,HasSweetTooth) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+            stmt.setString(1, itemName);
+            stmt.setDouble(2, itemPrice);
+            stmt.setInt(3, mealTypeId);
+            stmt.setInt(4, itemAvailability);
+            stmt.setString(5, dietary);
+            stmt.setString(6, spiceLevel);
+            stmt.setString(7, cuisine);
+            stmt.setInt(8, isSweetTooth);
             stmt.executeUpdate();
 
             NotificationManagement.addNotification("New Food Item is added into the Menu");
@@ -49,38 +61,6 @@ public class MenuManagement implements IMenuManagementDatabase {
             System.err.println("Error while fetching menu items: " + e.getMessage());
         }
         return menuItems;
-    }
-
-    public void generateFinalizedMenu(Scanner scanner, BufferedReader in, PrintWriter out) throws IOException {
-        try {
-            System.out.println("Enter the Menu Item Id for the Finalized Breakfast");
-            int breakfastMenuItemId = scanner.nextInt();
-            System.out.println("Enter the Menu Item Id for the Finalized Lunch");
-            int lunchMenuItemId = scanner.nextInt();
-            System.out.println("Enter the Menu Item Id for the Finalized Dinner");
-            int dinnerMenuItemId = scanner.nextInt();
-            out.println("generateFinalizedMenu:" + breakfastMenuItemId + ":" + lunchMenuItemId + ":" + dinnerMenuItemId);
-            String response;
-            while (!(response = in.readLine()).equals("END")) {
-                System.out.println(response);
-            }
-        } catch (InputMismatchException e) {
-            System.err.println("Invalid input: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("I/O error: " + e.getMessage());
-        }
-    }
-
-    public static void viewRecommendationMenu(BufferedReader in, PrintWriter out) throws IOException {
-        try {
-            out.println("viewRecommendationMenu");
-            String response;
-            while (!(response = in.readLine()).equals("END")) {
-                System.out.println(response);
-            }
-        } catch (IOException e) {
-            System.err.println("I/O error: " + e.getMessage());
-        }
     }
 
     @Override
@@ -171,11 +151,11 @@ public class MenuManagement implements IMenuManagementDatabase {
 
     @Override
     public void makeEmployeeProfile(BufferedReader in, PrintWriter out, String[] parts){
-        String dietary = parts[1];
-        String spiceLevel = parts[2];
-        String cousine = parts[3];
-        Integer isSweethTooth = Integer.parseInt(parts[4]);
-        Integer userId = Integer.parseInt(parts[5]);
+        String dietary = parts[2];
+        String spiceLevel = parts[3];
+        String cousine = parts[4];
+        Integer isSweethTooth = Integer.parseInt(parts[5]);
+        Integer userId = Integer.parseInt(parts[6]);
 
         System.out.println(dietary+":"+spiceLevel+":"+cousine+":"+isSweethTooth+":"+userId);
 
@@ -205,7 +185,6 @@ public class MenuManagement implements IMenuManagementDatabase {
                 generateNewRecommendations(conn, sentimentAnalyzer, foodSentimentRatings, foodRatings, recommendedMenuItems);
             } else {
                 recommendedMenuItems.add("Recommendation Menu already generated.");
-                System.out.println("Recommendation Menu already generated.");
             }
         } catch (SQLException e) {
             System.err.println("Error while generating recommended menu: " + e.getMessage());
@@ -721,11 +700,11 @@ public class MenuManagement implements IMenuManagementDatabase {
 
     @Override
     public void insertImprovementAnswersinDB(BufferedReader in, PrintWriter out, String[] parts) {
-        int foodItemId = Integer.parseInt(parts[1]);
-        int userId = Integer.parseInt(parts[2]);
-        String answer1 = parts[3];
-        String answer2 = parts[4];
-        String answer3 = parts[5];
+        int foodItemId = Integer.parseInt(parts[2]);
+        int userId = Integer.parseInt(parts[3]);
+        String answer1 = parts[4];
+        String answer2 = parts[5];
+        String answer3 = parts[6];
         try (Connection conn = DatabaseConnection.getConnection()) {
             insertImprovementAnswers(conn, foodItemId, userId, answer1, answer2, answer3);
         } catch (SQLException e) {
