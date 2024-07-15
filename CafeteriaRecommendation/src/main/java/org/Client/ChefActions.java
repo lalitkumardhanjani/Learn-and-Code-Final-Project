@@ -47,7 +47,7 @@ public class ChefActions {
                         viewImprovementQuestionandAnswers(in, out);
                         break;
                     case 11:
-                        AdminActions.deleteMenuItem(scanner, in, out);
+                        deleteMenuItem(scanner, in, out);
                         break;
                     case 12:
                         Utility.logout(out);
@@ -61,6 +61,23 @@ public class ChefActions {
             scanner.nextLine(); // Clear the invalid input
         } catch (NullPointerException e) {
             System.err.println("Null value encountered: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    public static void deleteMenuItem(Scanner scanner, BufferedReader in, PrintWriter out) {
+        try {
+            System.out.println("Enter menu item Id: ");
+            int menuId = Utility.readIntInput(scanner);
+            out.println(Constant.chefRole+":"+"deleteMenuItem:" + menuId);
+            String response = in.readLine();
+            System.out.println(response);
+        } catch (InputMismatchException e) {
+            System.err.println("Invalid input type: " + e.getMessage());
+            scanner.nextLine();
+        } catch (IOException e) {
+            System.err.println("I/O error: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
         }

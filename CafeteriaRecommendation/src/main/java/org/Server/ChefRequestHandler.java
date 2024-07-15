@@ -40,6 +40,11 @@ public class ChefRequestHandler {
                 case "getDiscardFoodItemIds":
                     chefService.getDiscardFoodItemIds(outputWriter);
                     break;
+                case "viewImprovementQuestionandAnswers":
+                    chefService.viewImprovementQuestionandAnswers(outputWriter);
+                case "deleteMenuItem":
+                    chefService.deleteMenuItem(outputWriter,requestParts);
+                    break;
                 default:
                     outputWriter.println("Invalid input.");
                     break;

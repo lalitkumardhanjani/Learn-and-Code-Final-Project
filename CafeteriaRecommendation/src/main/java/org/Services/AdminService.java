@@ -53,11 +53,6 @@ public class AdminService {
 
     public static void processMenuItemDeletion(PrintWriter outputWriter, String[] menuItemData) {
         try {
-            if (menuItemData.length < 2) {
-                outputWriter.println("Invalid input for deleting menu item.");
-                return;
-            }
-
             int menuItemId = Integer.parseInt(menuItemData[2]);
             boolean isDeleted = sqlServerDatabase.deleteMenuItem(menuItemId);
             if (isDeleted) {

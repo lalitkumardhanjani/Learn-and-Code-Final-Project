@@ -119,23 +119,43 @@ public class EmployeeService {
     public void viewFinalizedMenu(PrintWriter outputWriter) {
         try {
             List<String> finalizedMenu = sqlServerDatabase.getFinalizedMenu();
-            printMenu(outputWriter, finalizedMenu, "----- Finalized Menu -----");
+            if (finalizedMenu.isEmpty()) {
+                outputWriter.println("No menu items available.");
+            } else {
+                outputWriter.println("--------------- Finalized Menu ---------------");
+                outputWriter.println(String.format("%-15s %-20s %-10s %-15s %-15s", "Id", "FoodItemId", "Name", "Price", "MealType"));
+                outputWriter.println("--------------------------------------------");
+                for (String menuItem : finalizedMenu) {
+                    outputWriter.println(menuItem);
+                }
+                outputWriter.println("--------------------------------------------");
+            }
+            outputWriter.println("END");
         } catch (SQLException sqlException) {
             outputWriter.println("Database error while viewing finalized menu: " + sqlException.getMessage());
         } catch (RuntimeException runtimeException) {
             outputWriter.println("Unexpected error while viewing finalized menu: " + runtimeException.getMessage());
         }
     }
-
+    public void getDiscardedMenuItemIds(BufferedReader inputReader,PrintWriter outputWriter){
+        try {
+            String discardItemList=sqlServerDatabase.getDiscardFoodItemIds();
+            outputWriter.println(discardItemList);
+        } catch (NumberFormatException numberFormatException) {
+            outputWriter.println("Error: Invalid number format in input data. " + numberFormatException.getMessage());
+        } catch (RuntimeException runtimeException) {
+            outputWriter.println("Unexpected error while getting Discarded Menu Items: " + runtimeException.getMessage());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public void fillEmployeeImprovementAnswers(BufferedReader inputReader, PrintWriter outputWriter, String[] employeeItemData) {
         try {
             sqlServerDatabase.insertImprovementAnswersinDB(inputReader,outputWriter,employeeItemData);
         } catch (NumberFormatException numberFormatException) {
             outputWriter.println("Error: Invalid number format in input data. " + numberFormatException.getMessage());
-
         } catch (RuntimeException runtimeException) {
             outputWriter.println("Unexpected error while inserting Improvement Questions and Answers: " + runtimeException.getMessage());
-            // Handle or log the exception as per your project's requirements
         }
     }
 

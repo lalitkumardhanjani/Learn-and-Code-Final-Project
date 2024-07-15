@@ -250,7 +250,9 @@ public class MenuManagement implements IMenuManagementDatabase {
             List<Integer> ratings = entry.getValue();
             double averageRating = sentimentAnalyzer.calculateAverageRating(foodItemId, ratings);
             double sentimentScore = SentimentAnalyzer.calculateSentimentScore(foodComments.get(foodItemId));
-
+            System.out.println(foodItemId);
+            System.out.println(averageRating);
+            System.out.println(sentimentScore);
             if (averageRating < 2 && sentimentScore < 2) {
                 addDiscardItem(conn, foodItemId, discardMenuItems);
             }
@@ -649,11 +651,10 @@ public class MenuManagement implements IMenuManagementDatabase {
     }
 
     private void insertFinalizedMenuItem(Connection conn, int id, String name) {
-        String insertSql = "INSERT INTO FinalizedMenu (FoodItemId, Name, DateTime) VALUES (?, ?, GETDATE())";
+        String insertSql = "UPDATE RecommendedMenu SET Status = 1 WHERE foodItemId = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(insertSql)) {
             stmt.setInt(1, id);
-            stmt.setString(2, name);
             stmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Error while inserting finalized menu item: " + e.getMessage());
@@ -677,7 +678,7 @@ public class MenuManagement implements IMenuManagementDatabase {
     }
     public List<String> getFinalizedMenu() throws SQLException {
         List<String> finalizedMenuItems = new ArrayList<>();
-        String query = "SELECT Id, FoodItemId, Name FROM FinalizedMenu WHERE CONVERT(DATE, DateTime) = CONVERT(DATE, GETDATE())";
+        String query = "SELECT Id, FoodItemId, Name, Price, MealType FROM RecommendedMenu WHERE Status = 1";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
@@ -686,8 +687,10 @@ public class MenuManagement implements IMenuManagementDatabase {
                 int id = rs.getInt("Id");
                 int foodItemId = rs.getInt("FoodItemId");
                 String name = rs.getString("Name");
+                Double price = rs.getDouble("Price");
+                String mealType = rs.getString("MealType");
 
-                String formattedItem = String.format("%-15d %-15d %-20s", id, foodItemId, name);
+                String formattedItem = String.format("%-15d %-15d %-20s %-9.2f %-15s", id, foodItemId, name,price,mealType);
                 finalizedMenuItems.add(formattedItem);
             }
         } catch (SQLException e) {

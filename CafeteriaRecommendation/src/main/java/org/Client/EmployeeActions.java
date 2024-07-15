@@ -79,7 +79,10 @@ public class EmployeeActions {
         String response = in.readLine();
         System.out.println(response);
         String[] discardedItemIds = response.split(",");
-
+        if(discardedItemIds.length == 0){
+            System.out.println("There is no Discard food items...");
+            return;
+        }
         for (String foodItemId : discardedItemIds) {
             scanner.nextLine();
             System.out.println("Q1. What didn't you like about FoodId " + foodItemId + "?");
@@ -92,7 +95,7 @@ public class EmployeeActions {
             String answer3  = Utility.readStringInput(scanner);
 
             // Send improvement answers
-            out.println("improvementAnswers:" + foodItemId + ":" + userId + ":" + answer1 + ":" + answer2 + ":" + answer3);
+            out.println(Constant.employeeRole+":"+"improvementAnswers:" + foodItemId + ":" + userId + ":" + answer1 + ":" + answer2 + ":" + answer3);
 
             System.out.println("Thank you for the giving the Feedback");
         }

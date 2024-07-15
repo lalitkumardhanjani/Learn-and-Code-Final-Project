@@ -120,17 +120,23 @@ public class ChefService {
 
     public void generateFinalizedMenu(PrintWriter outputWriter, String[] menuItemData) {
         try {
-            if (menuItemData.length < 4) {
-                outputWriter.println("Invalid input for generating finalized menu.");
-                return;
-            }
-
-            int breakfastMenuItemId = Integer.parseInt(menuItemData[1]);
-            int lunchMenuItemId = Integer.parseInt(menuItemData[2]);
-            int dinnerMenuItemId = Integer.parseInt(menuItemData[3]);
+            int breakfastMenuItemId = Integer.parseInt(menuItemData[2]);
+            int lunchMenuItemId = Integer.parseInt(menuItemData[3]);
+            int dinnerMenuItemId = Integer.parseInt(menuItemData[4]);
 
             List<String> finalizedMenu = sqlServerDatabase.getFinalizedMenu(breakfastMenuItemId, lunchMenuItemId, dinnerMenuItemId);
-            printMenu(outputWriter, finalizedMenu, "----- Finalized Cafeteria Menu -----");
+            if (finalizedMenu.isEmpty()) {
+                outputWriter.println("No menu items available.");
+            } else {
+                outputWriter.println("-------------  Finalized Cafeteria Menu --------------");
+                outputWriter.println(String.format("%-15s %-20s %-10s %-15s", "Id", "Item", "Price", "Meal Type"));
+                outputWriter.println("--------------------------------------------");
+                for (String menuItem : finalizedMenu) {
+                    outputWriter.println(menuItem);
+                }
+                outputWriter.println("--------------------------------------------");
+            }
+            outputWriter.println("END");
         } catch (NumberFormatException numberFormatException) {
             outputWriter.println("Error: Invalid number format in input data. " + numberFormatException.getMessage());
         } catch (SQLException sqlException) {
@@ -209,5 +215,44 @@ public class ChefService {
     public void getDiscardFoodItemIds(PrintWriter outputWriter) throws SQLException {
         String discardFoodItemIds = sqlServerDatabase.getDiscardFoodItemIds();
         outputWriter.println(discardFoodItemIds);
+    }
+
+    public void viewImprovementQuestionandAnswers(PrintWriter outputWriter) {
+        try {
+            List<String> improvementQuestionAnswers = sqlServerDatabase.getImprovementQuestionsandAnswers();
+            if (improvementQuestionAnswers.isEmpty()) {
+                outputWriter.println("No menu items available.");
+            } else {
+                outputWriter.println("----- Improvement Questions and Answers -----");
+                outputWriter.println(String.format("%-50s %-50s %-50s %-50s %-50s", "FoodItemId", "UserId", "What didn't you like about Food?", "How would you like Food?", "Share your mom's recipe for Food?"));
+                outputWriter.println("-----------------------------------------------------------------");
+                for (String menuItem : improvementQuestionAnswers) {
+                    String[] menuItemData = menuItem.split("\\^");
+                        outputWriter.println(String.format("%-15s %-20s %-10s %-20s %-15s",
+                                menuItemData[0], menuItemData[1], menuItemData[2], menuItemData[3], menuItemData[4]));
+                }
+                outputWriter.println("-----------------------------------------------------------------");
+            }
+            outputWriter.println("END");
+        } catch (RuntimeException e) {
+            outputWriter.println("Unexpected error while viewing Improvement Questions and Answers: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteMenuItem(PrintWriter outputWriter, String[] menuItemData) {
+        try {
+            int menuItemId = Integer.parseInt(menuItemData[2]);
+            boolean isDeleted = sqlServerDatabase.deleteMenuItem(menuItemId);
+            if (isDeleted) {
+                outputWriter.println("Menu item deleted successfully.");
+            } else {
+                outputWriter.println("Failed to delete menu item.");
+            }
+        } catch (NumberFormatException numberFormatException) {
+            outputWriter.println("Error: Invalid number format in input data. " + numberFormatException.getMessage());
+        } catch (RuntimeException runtimeException) {
+            outputWriter.println("Unexpected error while deleting menu item: " + runtimeException.getMessage());
+        }
     }
 }

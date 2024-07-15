@@ -35,6 +35,9 @@ public class EmployeeRequestHandler {
                 case "makeEmployeeProfile":
                     employeeService.makeEmployeeProfile(inputReader, outputWriter, requestParts);
                     break;
+                case "getDiscardFoodItemIds":
+                    employeeService.getDiscardedMenuItemIds(inputReader,outputWriter);
+                    break;
                 default:
                     outputWriter.println("Invalid input.");
                     break;
